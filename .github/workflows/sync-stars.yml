@@ -1,0 +1,73 @@
+name: Sync Stars
+
+# 触发条件：每天 UTC 02:00 自动运行 + 支持手动触发
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: '强制重新生成所有元数据（忽略缓存）'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+# 权限：允许写入仓库内容（用于部署到 gh-pages 分支）
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# 同一时间只允许一个 sync 任务运行，避免并发冲突
+concurrency:
+  group: sync-stars
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Sync starred repos and generate metadata
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ secrets.STAR_GITHUB_USERNAME }}
+          LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          FORCE_REFRESH: ${{ github.event.inputs.force_refresh || 'false' }}
+        run: python src/sync_stars.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: star-data
+          path: public/
+          retention-days: 7
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: false
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'chore(sync): update star knowledge base ${{ github.run_id }}'

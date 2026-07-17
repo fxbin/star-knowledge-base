@@ -1,0 +1,13 @@
+# Star Knowledge Base 运行依赖
+# GitHub API 调用
+requests>=2.31.0
+
+# LLM 客户端（支持多家：OpenAI 兼容接口 / Anthropic）
+openai>=1.0.0
+anthropic>=0.34.0
+
+# MCP server 实现
+mcp>=1.0.0
+
+# JSON 处理
+python-dotenv>=1.0.0
