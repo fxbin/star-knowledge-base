@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Knowledge Base</title>
+    <style>
+        /* 全局样式 */
+        :root {
+            --color-bg: #f6f8fa;
+            --color-card: #ffffff;
+            --color-border: #d0d7de;
+            --color-text: #1f2328;
+            --color-text-secondary: #656d76;
+            --color-accent: #0969da;
+            --color-accent-hover: #0550ae;
+            --color-tag-bg: #ddf4ff;
+            --color-tag-text: #0969da;
+            --color-score-high: #1a7f37;
+            --color-score-mid: #9a6700;
+            --color-score-low: #cf222e;
+            --shadow-sm: 0 1px 0 rgba(31, 35, 40, 0.04);
+            --shadow-md: 0 3px 6px rgba(140, 149, 159, 0.15);
+            --radius: 6px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+                "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
+                "Microsoft YaHei", sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* 顶部栏 */
+        .header {
+            background-color: var(--color-card);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--spacing-lg) var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .header-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        /* 搜索区 */
+        .search-container {
+            max-width: 1200px;
+            margin: var(--spacing-lg) auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        .search-box {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 15px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-card);
+            color: var(--color-text);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+        }
+
+        .search-button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-card);
+            color: var(--color-text);
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .search-button:hover {
+            background-color: var(--color-bg);
+        }
+
+        .search-button.primary {
+            background-color: var(--color-accent);
+            color: white;
+            border-color: var(--color-accent);
+        }
+
+        .search-button.primary:hover {
+            background-color: var(--color-accent-hover);
+        }
+
+        /* 过滤栏 */
+        .filter-bar {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        .filter-select {
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-card);
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .stats {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        /* 结果列表 */
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        /* 项目卡片 */
+        .card {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.15s, transform 0.15s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-sm);
+            gap: var(--spacing-sm);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-title a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .card-title a:hover {
+            text-decoration: underline;
+        }
+
+        .card-score {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        .card-score.high {
+            background-color: #dafbe1;
+            color: var(--color-score-high);
+        }
+
+        .card-score.mid {
+            background-color: #fff8c5;
+            color: var(--color-score-mid);
+        }
+
+        .card-score.low {
+            background-color: #ffebe9;
+            color: var(--color-score-low);
+        }
+
+        .card-description {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-summary {
+            font-size: 14px;
+            margin-bottom: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+        }
+
+        .card-summary-label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .tag {
+            font-size: 12px;
+            padding: 2px 8px;
+            background-color: var(--color-tag-bg);
+            color: var(--color-tag-text);
+            border-radius: 12px;
+        }
+
+        .tag.use-case {
+            background-color: #fff1cf;
+            color: #9a6700;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            font-size: 13px;
+            padding: 4px 10px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-card);
+            color: var(--color-text);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-button:hover {
+            background-color: var(--color-bg);
+            text-decoration: none;
+        }
+
+        .action-button.deepwiki {
+            color: #0969da;
+            border-color: #0969da;
+        }
+
+        .action-button.zread {
+            color: #1a7f37;
+            border-color: #1a7f37;
+        }
+
+        /* 状态提示 */
+        .status {
+            text-align: center;
+            padding: var(--spacing-lg);
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .status.error {
+            color: var(--color-score-low);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--color-border);
+            border-top-color: var(--color-accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: var(--spacing-sm);
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+        }
+
+        .pagination button {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-card);
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--color-bg);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: var(--spacing-lg);
+            color: var(--color-text-secondary);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 响应式 */
+        @media (max-width: 640px) {
+            .header-title { font-size: 20px; }
+            .card-header { flex-direction: column; }
+            .search-box { flex-direction: column; }
+            .search-button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <h1 class="header-title">Star Knowledge Base</h1>
+            <p class="header-subtitle">让你的 GitHub Stars 从收藏夹变成 agent 可检索的个人代码工具箱</p>
+        </div>
+    </header>
+
+    <main class="search-container">
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="输入关键词、技术栈、场景（例如：实时聊天、文件上传、ORM）"
+                autocomplete="off"
+            >
+            <button id="searchButton" class="search-button primary">搜索</button>
+            <button id="resetButton" class="search-button">重置</button>
+        </div>
+
+        <div class="filter-bar">
+            <span class="filter-label">语言:</span>
+            <select id="languageFilter" class="filter-select">
+                <option value="">全部</option>
+            </select>
+
+            <span class="filter-label">排序:</span>
+            <select id="sortBy" class="filter-select">
+                <option value="starred_at-desc">最近 star</option>
+                <option value="stargazers_count-desc">Star 数（高→低）</option>
+                <option value="stargazers_count-asc">Star 数（低→高）</option>
+                <option value="quality_score-desc">质量评分（高→低）</option>
+                <option value="pushed_at-desc">最近更新</option>
+            </select>
+
+            <span class="stats" id="stats"></span>
+        </div>
+
+        <div id="results" class="results"></div>
+        <div id="status" class="status"></div>
+        <div id="pagination" class="pagination" style="display: none;"></div>
+    </main>
+
+    <footer class="footer">
+        <p>Powered by <a href="https://docs.github.com/en/pages" target="_blank" rel="noopener">GitHub Pages</a>
+            · 数据由 GitHub Actions 每日同步
+            · <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> agent 可接入</p>
+    </footer>
+
+    <script>
+        /**
+         * Star Knowledge Base 前端搜索逻辑
+         *
+         * 设计原则:
+         *   - Vanilla JS，零依赖，零构建步骤
+         *   - 客户端全量过滤与排序，无需后端
+         *   - data.json 加载后缓存在内存，避免重复请求
+         *
+         * author: fxbin
+         */
+
+        // 常量定义（禁止魔法值）
+        const DATA_URL = './data.json';
+        const PAGE_SIZE = 20;
+        const MIN_QUERY_LENGTH = 1;
+        const HIGH_SCORE_THRESHOLD = 4;
+        const LOW_SCORE_THRESHOLD = 2;
+
+        // 全局状态
+        const state = {
+            allEntries: [],
+            filteredEntries: [],
+            currentPage: 1,
+            languages: new Set(),
+            isLoading: false,
+        };
+
+        // DOM 引用
+        const dom = {
+            searchInput: document.getElementById('searchInput'),
+            searchButton: document.getElementById('searchButton'),
+            resetButton: document.getElementById('resetButton'),
+            languageFilter: document.getElementById('languageFilter'),
+            sortBy: document.getElementById('sortBy'),
+            stats: document.getElementById('stats'),
+            results: document.getElementById('results'),
+            status: document.getElementById('status'),
+            pagination: document.getElementById('pagination'),
+        };
+
+        /**
+         * 显示状态信息
+         * @param {string} message - 消息内容
+         * @param {boolean} isError - 是否为错误
+         */
+        function showStatus(message, isError = false) {
+            dom.status.textContent = message;
+            dom.status.className = isError ? 'status error' : 'status';
+            dom.status.style.display = message ? 'block' : 'none';
+        }
+
+        /**
+         * 显示加载中状态
+         * @param {string} message - 加载提示
+         */
+        function showLoading(message) {
+            dom.status.innerHTML = '<span class="loading"></span>' + message;
+            dom.status.className = 'status';
+            dom.status.style.display = 'block';
+        }
+
+        /**
+         * 加载 data.json
+         * 失败时显示错误并提示用户检查 Pages 是否已部署。
+         */
+        async function loadData() {
+            showLoading('正在加载 star 数据...');
+            try {
+                const response = await fetch(DATA_URL, { cache: 'no-cache' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                state.allEntries = data.entries || [];
+                state.languages = new Set(
+                    state.allEntries
+                        .map(entry => entry.language)
+                        .filter(Boolean)
+                        .sort()
+                );
+                populateLanguageFilter();
+                showStatus('');
+                applyFilters();
+            } catch (error) {
+                showStatus('数据加载失败：' + error.message + '。请确认 GitHub Actions 已运行并部署到 Pages。', true);
+                state.allEntries = [];
+                dom.stats.textContent = '';
+            }
+        }
+
+        /**
+         * 填充语言过滤下拉框
+         */
+        function populateLanguageFilter() {
+            const currentValue = dom.languageFilter.value;
+            dom.languageFilter.innerHTML = '<option value="">全部</option>';
+            state.languages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = lang;
+                dom.languageFilter.appendChild(option);
+            });
+            dom.languageFilter.value = currentValue;
+        }
+
+        /**
+         * 应用过滤与排序
+         */
+        function applyFilters() {
+            const query = dom.searchInput.value.trim().toLowerCase();
+            const language = dom.languageFilter.value;
+            const [sortField, sortOrder] = dom.sortBy.value.split('-');
+
+            let filtered = state.allEntries.slice();
+
+            // 语言过滤
+            if (language) {
+                filtered = filtered.filter(entry => entry.language === language);
+            }
+
+            // 关键词过滤
+            if (query.length >= MIN_QUERY_LENGTH) {
+                const tokens = query.split(/\s+/).filter(Boolean);
+                filtered = filtered.filter(entry => {
+                    const haystack = [
+                        entry.full_name || '',
+                        entry.description || '',
+                        entry.summary || '',
+                        entry.language || '',
+                        (entry.topics || []).join(' '),
+                        (entry.use_cases || []).join(' '),
+                    ].join(' ').toLowerCase();
+                    return tokens.every(token => haystack.includes(token));
+                });
+            }
+
+            // 排序
+            filtered.sort((a, b) => {
+                let valueA = a[sortField];
+                let valueB = b[sortField];
+                if (typeof valueA === 'string') {
+                    valueA = valueA.toLowerCase();
+                    valueB = valueB.toLowerCase();
+                }
+                if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
+                if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            state.filteredEntries = filtered;
+            state.currentPage = 1;
+            renderResults();
+        }
+
+        /**
+         * 渲染结果列表
+         */
+        function renderResults() {
+            const total = state.filteredEntries.length;
+            const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+            if (state.currentPage > totalPages) {
+                state.currentPage = totalPages;
+            }
+            const start = (state.currentPage - 1) * PAGE_SIZE;
+            const end = start + PAGE_SIZE;
+            const pageEntries = state.filteredEntries.slice(start, end);
+
+            dom.stats.textContent = `共 ${total} 个项目 · 第 ${state.currentPage}/${totalPages} 页`;
+
+            if (total === 0) {
+                dom.results.innerHTML = '';
+                showStatus('没有匹配的项目。试试其他关键词或重置过滤条件。');
+                dom.pagination.style.display = 'none';
+                return;
+            }
+
+            showStatus('');
+            dom.results.innerHTML = pageEntries.map(entryToHtml).join('');
+            renderPagination(totalPages);
+        }
+
+        /**
+         * 渲染分页控件
+         */
+        function renderPagination(totalPages) {
+            if (totalPages <= 1) {
+                dom.pagination.style.display = 'none';
+                return;
+            }
+            dom.pagination.style.display = 'flex';
+            dom.pagination.innerHTML = '';
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '上一页';
+            prevButton.disabled = state.currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                state.currentPage--;
+                renderResults();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '下一页';
+            nextButton.disabled = state.currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                state.currentPage++;
+                renderResults();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            const pageInfo = document.createElement('span');
+            pageInfo.style.alignSelf = 'center';
+            pageInfo.style.fontSize = '13px';
+            pageInfo.style.color = 'var(--color-text-secondary)';
+            pageInfo.textContent = `${state.currentPage} / ${totalPages}`;
+
+            dom.pagination.appendChild(prevButton);
+            dom.pagination.appendChild(pageInfo);
+            dom.pagination.appendChild(nextButton);
+        }
+
+        /**
+         * 把单个 entry 渲染为卡片 HTML
+         */
+        function entryToHtml(entry) {
+            const scoreClass = entry.quality_score >= HIGH_SCORE_THRESHOLD ? 'high'
+                : entry.quality_score >= LOW_SCORE_THRESHOLD ? 'mid'
+                : 'low';
+            const scoreLabel = `质量 ${entry.quality_score}/5`;
+
+            const topics = (entry.topics || [])
+                .slice(0, 10)
+                .map(topic => `<span class="tag">${escapeHtml(topic)}</span>`)
+                .join('');
+
+            const useCases = (entry.use_cases || [])
+                .slice(0, 5)
+                .map(useCase => `<span class="tag use-case">${escapeHtml(useCase)}</span>`)
+                .join('');
+
+            const summaryBlock = entry.summary
+                ? `<div class="card-summary">
+                       <div class="card-summary-label">LLM 摘要</div>
+                       ${escapeHtml(entry.summary)}
+                   </div>`
+                : '';
+
+            return `
+                <article class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">
+                                ${escapeHtml(entry.full_name)}
+                            </a>
+                        </div>
+                        <span class="card-score ${scoreClass}">${scoreLabel}</span>
+                    </div>
+                    <p class="card-description">${escapeHtml(entry.description || '（无描述）')}</p>
+                    ${summaryBlock}
+                    <div class="card-meta">
+                        ${entry.language ? `<span class="card-meta-item">语言: ${escapeHtml(entry.language)}</span>` : ''}
+                        <span class="card-meta-item">★ ${entry.stargazers_count || 0}</span>
+                        <span class="card-meta-item">⑂ ${entry.forks_count || 0}</span>
+                        <span class="card-meta-item">最近 push: ${formatDate(entry.pushed_at)}</span>
+                        <span class="card-meta-item">starred: ${formatDate(entry.starred_at)}</span>
+                    </div>
+                    ${topics ? `<div class="card-tags">${topics}</div>` : ''}
+                    ${useCases ? `<div class="card-tags">${useCases}</div>` : ''}
+                    <div class="card-actions">
+                        <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">GitHub</a>
+                        <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
+                        <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
+                    </div>
+                </article>
+            `;
+        }
+
+        /**
+         * HTML 转义，防止 XSS
+         */
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        /**
+         * 日期格式化
+         */
+        function formatDate(isoString) {
+            if (!isoString) return '未知';
+            try {
+                const date = new Date(isoString);
+                return date.toLocaleDateString('zh-CN');
+            } catch {
+                return isoString;
+            }
+        }
+
+        // 事件绑定
+        dom.searchButton.addEventListener('click', applyFilters);
+        dom.resetButton.addEventListener('click', () => {
+            dom.searchInput.value = '';
+            dom.languageFilter.value = '';
+            dom.sortBy.value = 'starred_at-desc';
+            applyFilters();
+        });
+        dom.searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                applyFilters();
+            }
+        });
+        dom.languageFilter.addEventListener('change', applyFilters);
+        dom.sortBy.addEventListener('change', applyFilters);
+
+        // 防抖搜索
+        let debounceTimer = null;
+        dom.searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFilters, 300);
+        });
+
+        // 初始化
+        loadData();
+    </script>
+</body>
+</html>
