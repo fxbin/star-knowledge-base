@@ -5,178 +5,309 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Star Knowledge Base</title>
     <style>
-        /* 全局样式 */
+        /* ========== 设计系统：编辑级极简主义 ========== */
         :root {
-            --color-bg: #f6f8fa;
+            /* 色彩：暖白 + 深灰 + 单一强调色 */
+            --color-bg: #fafaf9;
             --color-card: #ffffff;
-            --color-border: #d0d7de;
-            --color-text: #1f2328;
-            --color-text-secondary: #656d76;
-            --color-accent: #0969da;
-            --color-accent-hover: #0550ae;
-            --color-tag-bg: #ddf4ff;
-            --color-tag-text: #0969da;
-            --color-score-high: #1a7f37;
-            --color-score-mid: #9a6700;
-            --color-score-low: #cf222e;
-            --shadow-sm: 0 1px 0 rgba(31, 35, 40, 0.04);
-            --shadow-md: 0 3px 6px rgba(140, 149, 159, 0.15);
-            --radius: 6px;
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
+            --color-border: #e5e5e4;
+            --color-border-strong: #d4d4d2;
+            --color-text: #1c1917;
+            --color-text-secondary: #57534e;
+            --color-text-muted: #a8a29e;
+            --color-accent: #0d9488;
+            --color-accent-hover: #0f766e;
+            --color-accent-subtle: #f0fdfa;
+            --color-tag-bg: #f5f5f4;
+            --color-tag-text: #44403c;
+            --color-score-high: #059669;
+            --color-score-mid: #d97706;
+            --color-score-low: #dc2626;
+
+            /* 阴影：微妙、自然 */
+            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+
+            /* 圆角：适中、不夸张 */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+
+            /* 间距：8px 基准 */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --space-10: 40px;
+            --space-12: 48px;
+
+            /* 字体 */
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+
+            /* 过渡 */
+            --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
+        /* ========== 基础重置 ========== */
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
-                "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
-                "Microsoft YaHei", sans-serif;
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            line-height: 1.5;
-            min-height: 100vh;
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
         }
 
-        /* 顶部栏 */
+        body {
+            font-family: var(--font-sans);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ========== 顶部导航 ========== */
         .header {
             background-color: var(--color-card);
             border-bottom: 1px solid var(--color-border);
-            padding: var(--spacing-lg) var(--spacing-md);
-            box-shadow: var(--shadow-sm);
+            padding: var(--space-5) var(--space-4);
         }
 
         .header-container {
-            max-width: 1200px;
+            max-width: 1080px;
             margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            background-color: var(--color-accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .header-title {
-            font-size: 24px;
+            font-size: 1.125rem;
             font-weight: 600;
-            margin-bottom: var(--spacing-sm);
+            color: var(--color-text);
+            letter-spacing: -0.01em;
         }
 
         .header-subtitle {
+            font-size: 0.8125rem;
             color: var(--color-text-secondary);
-            font-size: 14px;
+            margin-top: 1px;
         }
 
-        /* 搜索区 */
-        .search-container {
-            max-width: 1200px;
-            margin: var(--spacing-lg) auto;
-            padding: 0 var(--spacing-md);
+        .header-stats {
+            display: flex;
+            gap: var(--space-6);
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+        }
+
+        .header-stat {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-1);
+        }
+
+        .header-stat-value {
+            font-weight: 600;
+            color: var(--color-text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ========== 主内容区 ========== */
+        .main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-4);
+        }
+
+        /* ========== 搜索区 ========== */
+        .search-section {
+            margin-bottom: var(--space-8);
         }
 
         .search-box {
             display: flex;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-md);
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
         }
 
         .search-input {
-            flex: 1;
-            padding: 10px 14px;
-            font-size: 15px;
+            width: 100%;
+            padding: 10px 14px 10px 40px;
+            font-size: 0.9375rem;
+            font-family: inherit;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-md);
             background-color: var(--color-card);
             color: var(--color-text);
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .search-input:hover {
+            border-color: var(--color-border-strong);
         }
 
         .search-input:focus {
-            outline: none;
             border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+            font-size: 15px;
+            pointer-events: none;
         }
 
         .search-button {
             padding: 10px 20px;
-            font-size: 14px;
+            font-size: 0.875rem;
             font-weight: 500;
+            font-family: inherit;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-md);
             background-color: var(--color-card);
             color: var(--color-text);
             cursor: pointer;
-            transition: background-color 0.15s;
+            transition: all var(--transition);
         }
 
         .search-button:hover {
             background-color: var(--color-bg);
+            border-color: var(--color-border-strong);
         }
 
         .search-button.primary {
             background-color: var(--color-accent);
-            color: white;
             border-color: var(--color-accent);
+            color: white;
         }
 
         .search-button.primary:hover {
             background-color: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
         }
 
-        /* 过滤栏 */
+        /* ========== 过滤栏 ========== */
         .filter-bar {
             display: flex;
-            gap: var(--spacing-sm);
+            gap: var(--space-4);
             flex-wrap: wrap;
-            margin-bottom: var(--spacing-md);
             align-items: center;
+            padding: var(--space-3) var(--space-4);
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
         }
 
         .filter-label {
-            font-size: 13px;
+            font-size: 0.8125rem;
             color: var(--color-text-secondary);
+            font-weight: 500;
         }
 
         .filter-select {
             padding: 6px 10px;
-            font-size: 13px;
+            font-size: 0.8125rem;
+            font-family: inherit;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-sm);
             background-color: var(--color-card);
             color: var(--color-text);
             cursor: pointer;
+            transition: border-color var(--transition);
+            outline: none;
+        }
+
+        .filter-select:hover {
+            border-color: var(--color-border-strong);
         }
 
         .filter-select:focus {
-            outline: none;
             border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.1);
         }
 
         .stats {
             margin-left: auto;
-            font-size: 13px;
+            font-size: 0.8125rem;
             color: var(--color-text-secondary);
         }
 
-        /* 结果列表 */
+        .stats-count {
+            font-weight: 600;
+            color: var(--color-accent);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ========== 结果列表 ========== */
         .results {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-md);
+            gap: var(--space-4);
         }
 
-        /* 项目卡片 */
+        /* ========== 项目卡片 ========== */
         .card {
             background-color: var(--color-card);
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: var(--spacing-md);
-            box-shadow: var(--shadow-sm);
-            transition: box-shadow 0.15s, transform 0.15s;
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            transition: border-color var(--transition), box-shadow var(--transition);
         }
 
         .card:hover {
+            border-color: var(--color-border-strong);
             box-shadow: var(--shadow-md);
         }
 
@@ -184,74 +315,83 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: var(--spacing-sm);
-            gap: var(--spacing-sm);
+            margin-bottom: var(--space-2);
+            gap: var(--space-3);
         }
 
         .card-title {
-            font-size: 16px;
+            font-size: 1rem;
             font-weight: 600;
+            line-height: 1.4;
         }
 
         .card-title a {
-            color: var(--color-accent);
+            color: var(--color-text);
             text-decoration: none;
+            transition: color var(--transition);
         }
 
         .card-title a:hover {
-            text-decoration: underline;
+            color: var(--color-accent);
         }
 
         .card-score {
-            font-size: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
             white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
 
         .card-score.high {
-            background-color: #dafbe1;
+            background-color: #ecfdf5;
             color: var(--color-score-high);
         }
 
         .card-score.mid {
-            background-color: #fff8c5;
+            background-color: #fffbeb;
             color: var(--color-score-mid);
         }
 
         .card-score.low {
-            background-color: #ffebe9;
+            background-color: #fef2f2;
             color: var(--color-score-low);
         }
 
         .card-description {
             color: var(--color-text-secondary);
-            font-size: 14px;
-            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-3);
+            line-height: 1.5;
         }
 
         .card-summary {
-            font-size: 14px;
-            margin-bottom: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            background-color: var(--color-bg);
-            border-radius: var(--radius);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-3);
+            padding: var(--space-3);
+            background-color: var(--color-accent-subtle);
+            border-left: 3px solid var(--color-accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            line-height: 1.6;
         }
 
         .card-summary-label {
-            font-size: 12px;
-            color: var(--color-text-secondary);
-            margin-bottom: var(--spacing-xs);
+            font-size: 0.6875rem;
+            color: var(--color-accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-1);
         }
 
         .card-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: var(--spacing-sm);
-            font-size: 13px;
+            gap: var(--space-4);
+            font-size: 0.8125rem;
             color: var(--color-text-secondary);
-            margin-bottom: var(--spacing-sm);
+            margin-bottom: var(--space-3);
         }
 
         .card-meta-item {
@@ -263,65 +403,79 @@
         .card-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-sm);
+            gap: var(--space-1);
+            margin-bottom: var(--space-3);
         }
 
         .tag {
-            font-size: 12px;
+            font-size: 0.75rem;
             padding: 2px 8px;
             background-color: var(--color-tag-bg);
             color: var(--color-tag-text);
             border-radius: 12px;
+            border: 1px solid var(--color-border);
         }
 
         .tag.use-case {
-            background-color: #fff1cf;
-            color: #9a6700;
+            background-color: #fffbeb;
+            color: #92400e;
+            border-color: #fde68a;
         }
 
         .card-actions {
             display: flex;
-            gap: var(--spacing-sm);
+            gap: var(--space-2);
             flex-wrap: wrap;
         }
 
         .action-button {
-            font-size: 13px;
-            padding: 4px 10px;
+            font-size: 0.8125rem;
+            padding: 5px 12px;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-sm);
             background-color: var(--color-card);
-            color: var(--color-text);
+            color: var(--color-text-secondary);
             text-decoration: none;
             cursor: pointer;
-            transition: background-color 0.15s;
+            transition: all var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            font-weight: 500;
         }
 
         .action-button:hover {
             background-color: var(--color-bg);
-            text-decoration: none;
+            color: var(--color-text);
+            border-color: var(--color-border-strong);
         }
 
         .action-button.deepwiki {
-            color: #0969da;
-            border-color: #0969da;
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+
+        .action-button.deepwiki:hover {
+            background-color: #f0f9ff;
+            border-color: #7dd3fc;
         }
 
         .action-button.zread {
-            color: #1a7f37;
-            border-color: #1a7f37;
+            color: #059669;
+            border-color: #a7f3d0;
         }
 
-        /* 状态提示 */
+        .action-button.zread:hover {
+            background-color: #ecfdf5;
+            border-color: #6ee7b7;
+        }
+
+        /* ========== 状态提示 ========== */
         .status {
             text-align: center;
-            padding: var(--spacing-lg);
+            padding: var(--space-12);
             color: var(--color-text-secondary);
-            font-size: 14px;
+            font-size: 0.875rem;
         }
 
         .status.error {
@@ -330,13 +484,13 @@
 
         .loading {
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border: 2px solid var(--color-border);
             border-top-color: var(--color-accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-right: var(--spacing-sm);
+            margin-right: var(--space-2);
             vertical-align: middle;
         }
 
@@ -344,39 +498,53 @@
             to { transform: rotate(360deg); }
         }
 
-        /* 分页 */
+        /* ========== 分页 ========== */
         .pagination {
             display: flex;
             justify-content: center;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-lg);
+            align-items: center;
+            gap: var(--space-3);
+            margin-top: var(--space-8);
         }
 
         .pagination button {
-            padding: 6px 12px;
-            font-size: 13px;
+            padding: 8px 16px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            font-family: inherit;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-sm);
             background-color: var(--color-card);
-            color: var(--color-text);
+            color: var(--color-text-secondary);
             cursor: pointer;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+            transition: all var(--transition);
         }
 
         .pagination button:hover:not(:disabled) {
             background-color: var(--color-bg);
+            color: var(--color-text);
+            border-color: var(--color-border-strong);
         }
 
-        /* 页脚 */
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ========== 页脚 ========== */
         .footer {
             text-align: center;
-            padding: var(--spacing-lg);
-            color: var(--color-text-secondary);
-            font-size: 13px;
+            padding: var(--space-8);
+            color: var(--color-text-muted);
+            font-size: 0.8125rem;
+            border-top: 1px solid var(--color-border);
+            margin-top: var(--space-12);
         }
 
         .footer a {
@@ -388,65 +556,345 @@
             text-decoration: underline;
         }
 
-        /* 响应式 */
+        /* ========== 响应式 ========== */
         @media (max-width: 640px) {
-            .header-title { font-size: 20px; }
-            .card-header { flex-direction: column; }
-            .search-box { flex-direction: column; }
-            .search-button { width: 100%; }
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-button {
+                width: 100%;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats {
+                margin-left: 0;
+            }
+
+            .card-header {
+                flex-direction: column;
+            }
+
+            .card-score {
+                align-self: flex-start;
+            }
+        }
+
+        /* ========== 滚动条 ========== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border-strong);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-muted);
+        }
+
+        /* ========== 选中文字 ========== */
+        ::selection {
+            background-color: rgba(13, 148, 136, 0.15);
+        }
+
+        /* ========== 视图切换 Tab ========== */
+        .view-tabs {
+            display: flex;
+            gap: var(--space-1);
+            margin-bottom: var(--space-4);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .view-tab {
+            padding: var(--space-2) var(--space-4);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: -1px;
+        }
+
+        .view-tab:hover {
+            color: var(--color-text);
+        }
+
+        .view-tab.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        /* ========== 图谱视图 ========== */
+        .graph-view {
+            display: none;
+        }
+
+        .graph-view.active {
+            display: flex;
+            gap: var(--space-4);
+        }
+
+        .graph-container {
+            flex: 1;
+            position: relative;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-card);
+            height: 600px;
+            overflow: hidden;
+        }
+
+        #graphCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-legend {
+            position: absolute;
+            bottom: var(--space-3);
+            left: var(--space-3);
+            padding: var(--space-2) var(--space-3);
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .graph-legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .graph-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ========== 图谱详情面板 ========== */
+        .graph-detail {
+            width: 320px;
+            flex-shrink: 0;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-card);
+            padding: var(--space-4);
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .graph-detail-placeholder {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            text-align: center;
+            padding-top: var(--space-12);
+        }
+
+        .graph-detail-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .graph-detail-title a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .graph-detail-title a:hover {
+            text-decoration: underline;
+        }
+
+        .graph-detail-desc {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-3);
+            line-height: 1.5;
+        }
+
+        .graph-detail-meta {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-3);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+
+        .graph-detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1);
+            margin-bottom: var(--space-3);
+        }
+
+        .graph-detail-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .graph-detail-actions .action-button {
+            justify-content: center;
+        }
+
+        /* ========== 响应式：图谱视图 ========== */
+        @media (max-width: 900px) {
+            .graph-view.active {
+                flex-direction: column;
+            }
+
+            .graph-container {
+                height: 400px;
+            }
+
+            .graph-detail {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 顶部导航 -->
     <header class="header">
         <div class="header-container">
-            <h1 class="header-title">Star Knowledge Base</h1>
-            <p class="header-subtitle">让你的 GitHub Stars 从收藏夹变成 agent 可检索的个人代码工具箱</p>
+            <div class="header-brand">
+                <div class="header-logo">★</div>
+                <div>
+                    <div class="header-title">Star Knowledge Base</div>
+                    <div class="header-subtitle">让你的 GitHub Stars 从收藏夹变成 agent 可检索的个人代码工具箱</div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span>项目总数</span>
+                    <span class="header-stat-value" id="totalCount">-</span>
+                </div>
+                <div class="header-stat">
+                    <span>语言</span>
+                    <span class="header-stat-value" id="langCount">-</span>
+                </div>
+                <div class="header-stat">
+                    <span>更新时间</span>
+                    <span class="header-stat-value" id="updateTime">-</span>
+                </div>
+            </div>
         </div>
     </header>
 
-    <main class="search-container">
-        <div class="search-box">
-            <input
-                type="text"
-                id="searchInput"
-                class="search-input"
-                placeholder="输入关键词、技术栈、场景（例如：实时聊天、文件上传、ORM）"
-                autocomplete="off"
-            >
-            <button id="searchButton" class="search-button primary">搜索</button>
-            <button id="resetButton" class="search-button">重置</button>
+    <!-- 主内容区 -->
+    <main class="main">
+        <!-- 搜索区 -->
+        <section class="search-section">
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">⌕</span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="输入关键词、技术栈、场景（例如：实时聊天、文件上传、ORM）"
+                        autocomplete="off"
+                    >
+                </div>
+                <button id="searchButton" class="search-button primary">搜索</button>
+                <button id="resetButton" class="search-button">重置</button>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">语言</span>
+                    <select id="languageFilter" class="filter-select">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">排序</span>
+                    <select id="sortBy" class="filter-select">
+                        <option value="starred_at-desc">最近 star</option>
+                        <option value="stargazers_count-desc">Star 数（高→低）</option>
+                        <option value="stargazers_count-asc">Star 数（低→高）</option>
+                        <option value="quality_score-desc">质量评分（高→低）</option>
+                        <option value="pushed_at-desc">最近更新</option>
+                    </select>
+                </div>
+
+                <div class="stats">
+                    <span>共 <span class="stats-count" id="statsCount">0</span> 个项目</span>
+                    <span id="pageInfo"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 视图切换 Tab -->
+        <div class="view-tabs">
+            <button class="view-tab active" id="tabCard">卡片视图</button>
+            <button class="view-tab" id="tabGraph">图谱视图</button>
         </div>
 
-        <div class="filter-bar">
-            <span class="filter-label">语言:</span>
-            <select id="languageFilter" class="filter-select">
-                <option value="">全部</option>
-            </select>
-
-            <span class="filter-label">排序:</span>
-            <select id="sortBy" class="filter-select">
-                <option value="starred_at-desc">最近 star</option>
-                <option value="stargazers_count-desc">Star 数（高→低）</option>
-                <option value="stargazers_count-asc">Star 数（低→高）</option>
-                <option value="quality_score-desc">质量评分（高→低）</option>
-                <option value="pushed_at-desc">最近更新</option>
-            </select>
-
-            <span class="stats" id="stats"></span>
+        <!-- 卡片视图 -->
+        <div id="cardView" class="card-view">
+            <!-- 结果列表 -->
+            <div id="results" class="results"></div>
+            <div id="status" class="status"></div>
+            <div id="pagination" class="pagination" style="display: none;"></div>
         </div>
 
-        <div id="results" class="results"></div>
-        <div id="status" class="status"></div>
-        <div id="pagination" class="pagination" style="display: none;"></div>
+        <!-- 图谱视图 -->
+        <div id="graphView" class="graph-view">
+            <div class="graph-container">
+                <div id="graphCanvas"></div>
+                <div class="graph-legend" id="graphLegend"></div>
+            </div>
+            <div class="graph-detail" id="graphDetail">
+                <div class="graph-detail-placeholder">点击节点查看项目详情</div>
+            </div>
+        </div>
     </main>
 
+    <!-- 页脚 -->
     <footer class="footer">
         <p>Powered by <a href="https://docs.github.com/en/pages" target="_blank" rel="noopener">GitHub Pages</a>
             · 数据由 GitHub Actions 每日同步
             · <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> agent 可接入</p>
     </footer>
 
+    <!-- Cytoscape.js 图谱可视化库（CDN 引入，零构建） -->
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
     <script>
         /**
          * Star Knowledge Base 前端搜索逻辑
@@ -466,6 +914,22 @@
         const HIGH_SCORE_THRESHOLD = 4;
         const LOW_SCORE_THRESHOLD = 2;
 
+        // 图谱相关常量
+        const GRAPH_NODE_THRESHOLD = 200;
+        const TOPIC_MIN_PROJECTS = 1;
+        const TOPIC_LABEL_MAX_LEN = 12;
+        const PROJECT_LABEL_MAX_LEN = 10;
+        const LANGUAGE_COLORS = {
+            Python: '#3776ab',
+            JavaScript: '#f7df1e',
+            TypeScript: '#3178c6',
+            Go: '#00add8',
+            Java: '#ed8b00',
+            Rust: '#dea584',
+            Other: '#a8a29e',
+        };
+        const DEFAULT_LANGUAGE_COLOR = '#a8a29e';
+
         // 全局状态
         const state = {
             allEntries: [],
@@ -473,6 +937,9 @@
             currentPage: 1,
             languages: new Set(),
             isLoading: false,
+            currentView: 'card',
+            graphInstance: null,
+            graphRendered: false,
         };
 
         // DOM 引用
@@ -482,10 +949,21 @@
             resetButton: document.getElementById('resetButton'),
             languageFilter: document.getElementById('languageFilter'),
             sortBy: document.getElementById('sortBy'),
-            stats: document.getElementById('stats'),
+            statsCount: document.getElementById('statsCount'),
+            pageInfo: document.getElementById('pageInfo'),
             results: document.getElementById('results'),
             status: document.getElementById('status'),
             pagination: document.getElementById('pagination'),
+            totalCount: document.getElementById('totalCount'),
+            langCount: document.getElementById('langCount'),
+            updateTime: document.getElementById('updateTime'),
+            tabCard: document.getElementById('tabCard'),
+            tabGraph: document.getElementById('tabGraph'),
+            cardView: document.getElementById('cardView'),
+            graphView: document.getElementById('graphView'),
+            graphCanvas: document.getElementById('graphCanvas'),
+            graphLegend: document.getElementById('graphLegend'),
+            graphDetail: document.getElementById('graphDetail'),
         };
 
         /**
@@ -529,12 +1007,25 @@
                         .sort()
                 );
                 populateLanguageFilter();
+                updateHeaderStats(data);
                 showStatus('');
                 applyFilters();
             } catch (error) {
                 showStatus('数据加载失败：' + error.message + '。请确认 GitHub Actions 已运行并部署到 Pages。', true);
                 state.allEntries = [];
-                dom.stats.textContent = '';
+                dom.statsCount.textContent = '0';
+            }
+        }
+
+        /**
+         * 更新顶部统计信息
+         */
+        function updateHeaderStats(data) {
+            dom.totalCount.textContent = data.total || state.allEntries.length;
+            dom.langCount.textContent = state.languages.size;
+            if (data.generated_at) {
+                const date = new Date(data.generated_at);
+                dom.updateTime.textContent = date.toLocaleDateString('zh-CN');
             }
         }
 
@@ -600,6 +1091,9 @@
             state.filteredEntries = filtered;
             state.currentPage = 1;
             renderResults();
+            if (state.currentView === 'graph') {
+                renderGraph();
+            }
         }
 
         /**
@@ -615,7 +1109,8 @@
             const end = start + PAGE_SIZE;
             const pageEntries = state.filteredEntries.slice(start, end);
 
-            dom.stats.textContent = `共 ${total} 个项目 · 第 ${state.currentPage}/${totalPages} 页`;
+            dom.statsCount.textContent = total;
+            dom.pageInfo.textContent = total > 0 ? ` · 第 ${state.currentPage}/${totalPages} 页` : '';
 
             if (total === 0) {
                 dom.results.innerHTML = '';
@@ -641,7 +1136,7 @@
             dom.pagination.innerHTML = '';
 
             const prevButton = document.createElement('button');
-            prevButton.textContent = '上一页';
+            prevButton.textContent = '← 上一页';
             prevButton.disabled = state.currentPage === 1;
             prevButton.addEventListener('click', () => {
                 state.currentPage--;
@@ -650,7 +1145,7 @@
             });
 
             const nextButton = document.createElement('button');
-            nextButton.textContent = '下一页';
+            nextButton.textContent = '下一页 →';
             nextButton.disabled = state.currentPage === totalPages;
             nextButton.addEventListener('click', () => {
                 state.currentPage++;
@@ -659,9 +1154,7 @@
             });
 
             const pageInfo = document.createElement('span');
-            pageInfo.style.alignSelf = 'center';
-            pageInfo.style.fontSize = '13px';
-            pageInfo.style.color = 'var(--color-text-secondary)';
+            pageInfo.className = 'pagination-info';
             pageInfo.textContent = `${state.currentPage} / ${totalPages}`;
 
             dom.pagination.appendChild(prevButton);
@@ -690,7 +1183,7 @@
 
             const summaryBlock = entry.summary
                 ? `<div class="card-summary">
-                       <div class="card-summary-label">LLM 摘要</div>
+                       <div class="card-summary-label">摘要</div>
                        ${escapeHtml(entry.summary)}
                    </div>`
                 : '';
@@ -708,11 +1201,11 @@
                     <p class="card-description">${escapeHtml(entry.description || '（无描述）')}</p>
                     ${summaryBlock}
                     <div class="card-meta">
-                        ${entry.language ? `<span class="card-meta-item">语言: ${escapeHtml(entry.language)}</span>` : ''}
+                        ${entry.language ? `<span class="card-meta-item">${escapeHtml(entry.language)}</span>` : ''}
                         <span class="card-meta-item">★ ${entry.stargazers_count || 0}</span>
                         <span class="card-meta-item">⑂ ${entry.forks_count || 0}</span>
-                        <span class="card-meta-item">最近 push: ${formatDate(entry.pushed_at)}</span>
-                        <span class="card-meta-item">starred: ${formatDate(entry.starred_at)}</span>
+                        <span class="card-meta-item">更新 ${formatDate(entry.pushed_at)}</span>
+                        <span class="card-meta-item">starred ${formatDate(entry.starred_at)}</span>
                     </div>
                     ${topics ? `<div class="card-tags">${topics}</div>` : ''}
                     ${useCases ? `<div class="card-tags">${useCases}</div>` : ''}
@@ -748,8 +1241,378 @@
             }
         }
 
+        /**
+         * 获取语言对应的颜色
+         * @param {string} language - 语言名称
+         * @returns {string} 十六进制颜色值
+         */
+        function getLanguageColor(language) {
+            if (!language) return DEFAULT_LANGUAGE_COLOR;
+            return LANGUAGE_COLORS[language] || DEFAULT_LANGUAGE_COLOR;
+        }
+
+        /**
+         * 截断文本到指定长度，超出部分用省略号替代
+         * @param {string} text - 原始文本
+         * @param {number} maxLen - 最大长度
+         * @returns {string} 截断后的文本
+         */
+        function truncateText(text, maxLen) {
+            if (!text || text.length <= maxLen) return text || '';
+            return text.substring(0, maxLen) + '…';
+        }
+
+        /**
+         * 从过滤后的项目列表构建图谱数据（二部图：topic 节点 + 项目节点）
+         *
+         * 聚类规则:
+         *   - 有 topics 的项目：每个 topic 作为聚类中心
+         *   - 无 topics 但有 language 的项目：language 作为聚类中心
+         *   - 都无的项目：归入"其他"聚类
+         *
+         * @returns {{nodes: Array, edges: Array}} 图谱节点和边
+         */
+        function buildGraphData() {
+            const entries = state.filteredEntries;
+            const topicMap = new Map();
+            const projectNodes = [];
+            const edges = [];
+
+            entries.forEach((entry, index) => {
+                const projectId = `p${index}`;
+                const projectLabel = truncateText(
+                    (entry.full_name || '').split('/').pop() || entry.full_name || '',
+                    PROJECT_LABEL_MAX_LEN
+                );
+                projectNodes.push({
+                    data: {
+                        id: projectId,
+                        label: projectLabel,
+                        type: 'project',
+                        entry: entry,
+                        color: getLanguageColor(entry.language),
+                        size: 20,
+                    }
+                });
+
+                const clusters = getProjectClusters(entry);
+                clusters.forEach(clusterName => {
+                    const topicId = `t_${clusterName}`;
+                    if (!topicMap.has(topicId)) {
+                        topicMap.set(topicId, {
+                            data: {
+                                id: topicId,
+                                label: truncateText(clusterName, TOPIC_LABEL_MAX_LEN),
+                                type: 'topic',
+                                topicName: clusterName,
+                                projectCount: 0,
+                                color: '#1c1917',
+                                size: 30,
+                            }
+                        });
+                    }
+                    topicMap.get(topicId).data.projectCount++;
+                    edges.push({
+                        data: {
+                            id: `e_${projectId}_${topicId}`,
+                            source: topicId,
+                            target: projectId,
+                        }
+                    });
+                });
+            });
+
+            const topicNodes = Array.from(topicMap.values()).map(node => {
+                node.data.size = 25 + Math.min(node.data.projectCount * 3, 30);
+                return node;
+            });
+
+            return {
+                nodes: [...topicNodes, ...projectNodes],
+                edges: edges,
+            };
+        }
+
+        /**
+         * 获取项目的聚类标签列表（topics 优先，language 兜底，都无则"其他"）
+         * @param {Object} entry - 项目数据
+         * @returns {string[]} 聚类标签列表
+         */
+        function getProjectClusters(entry) {
+            const topics = entry.topics || [];
+            if (topics.length > 0) {
+                return topics.slice(0, 3);
+            }
+            if (entry.language) {
+                return [entry.language];
+            }
+            return ['其他'];
+        }
+
+        /**
+         * 渲染图谱视图（Cytoscape.js 力导向二部图）
+         *
+         * 性能策略:
+         *   - 节点数超过 GRAPH_NODE_THRESHOLD 时关闭布局动画
+         *   - 使用 cose 布局算法（力导向）
+         *   - canvas 渲染，避免 SVG DOM 性能瓶颈
+         */
+        function renderGraph() {
+            if (state.filteredEntries.length === 0) {
+                dom.graphCanvas.innerHTML = '';
+                renderGraphDetail(null);
+                renderGraphLegend([]);
+                return;
+            }
+
+            const graphData = buildGraphData();
+            const animate = graphData.nodes.length <= GRAPH_NODE_THRESHOLD;
+
+            if (state.graphInstance) {
+                state.graphInstance.destroy();
+                state.graphInstance = null;
+            }
+
+            state.graphInstance = cytoscape({
+                container: dom.graphCanvas,
+                elements: [...graphData.nodes, ...graphData.edges],
+                style: [
+                    {
+                        selector: 'node[type = "topic"]',
+                        style: {
+                            'background-color': '#1c1917',
+                            'label': 'data(label)',
+                            'color': '#1c1917',
+                            'font-size': '11px',
+                            'font-weight': '600',
+                            'text-valign': 'bottom',
+                            'text-margin-y': 6,
+                            'width': 'data(size)',
+                            'height': 'data(size)',
+                            'border-width': 2,
+                            'border-color': '#d4d4d2',
+                        }
+                    },
+                    {
+                        selector: 'node[type = "project"]',
+                        style: {
+                            'background-color': 'data(color)',
+                            'label': 'data(label)',
+                            'color': '#57534e',
+                            'font-size': '9px',
+                            'text-valign': 'bottom',
+                            'text-margin-y': 4,
+                            'width': 'data(size)',
+                            'height': 'data(size)',
+                            'border-width': 1,
+                            'border-color': '#e5e5e4',
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 1,
+                            'line-color': '#d4d4d2',
+                            'opacity': 0.3,
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'none',
+                        }
+                    },
+                    {
+                        selector: 'node[type = "topic"]:selected',
+                        style: {
+                            'border-color': '#0d9488',
+                            'border-width': 3,
+                        }
+                    },
+                    {
+                        selector: 'node[type = "project"]:selected',
+                        style: {
+                            'border-color': '#0d9488',
+                            'border-width': 3,
+                        }
+                    },
+                    {
+                        selector: '.faded',
+                        style: {
+                            'opacity': 0.15,
+                        }
+                    },
+                    {
+                        selector: '.highlighted',
+                        style: {
+                            'opacity': 1,
+                            'border-color': '#0d9488',
+                            'border-width': 2,
+                        }
+                    },
+                ],
+                layout: {
+                    name: 'cose',
+                    animate: animate,
+                    animationDuration: 500,
+                    nodeRepulsion: 8000,
+                    idealEdgeLength: 60,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25,
+                    numIter: 1500,
+                    fit: true,
+                    padding: 30,
+                    randomize: true,
+                },
+                wheelSensitivity: 0.2,
+            });
+
+            bindGraphEvents();
+            renderGraphLegend(getTopLanguages());
+            state.graphRendered = true;
+        }
+
+        /**
+         * 绑定图谱交互事件
+         *
+         * 交互:
+         *   - 悬停项目节点：高亮该节点 + 关联边 + 相邻 topic，其余变淡
+         *   - 点击项目节点：右侧详情面板显示项目信息
+         *   - 点击 topic 节点：过滤为该 topic 下的项目
+         *   - 双击空白：重置视图
+         */
+        function bindGraphEvents() {
+            state.graphInstance.on('mouseover', 'node[type = "project"]', (event) => {
+                const node = event.target;
+                const connected = node.connectedEdges().connectedNodes().union(node.connectedEdges());
+                state.graphInstance.elements().addClass('faded');
+                connected.removeClass('faded').addClass('highlighted');
+                node.removeClass('faded');
+            });
+
+            state.graphInstance.on('mouseout', 'node[type = "project"]', () => {
+                state.graphInstance.elements().removeClass('faded highlighted');
+            });
+
+            state.graphInstance.on('tap', 'node[type = "project"]', (event) => {
+                const node = event.target;
+                const entry = node.data('entry');
+                renderGraphDetail(entry);
+            });
+
+            state.graphInstance.on('tap', 'node[type = "topic"]', (event) => {
+                const node = event.target;
+                const topicName = node.data('topicName');
+                dom.searchInput.value = topicName;
+                applyFilters();
+            });
+
+            state.graphInstance.on('dblclick', (event) => {
+                if (event.target === state.graphInstance) {
+                    state.graphInstance.animate({ fit: { eles: state.graphInstance.elements(), padding: 30 } });
+                }
+            });
+        }
+
+        /**
+         * 获取过滤结果中出现频率最高的前 6 种语言
+         * @returns {Array<{language: string, color: string}>} 语言和颜色列表
+         */
+        function getTopLanguages() {
+            const langCount = new Map();
+            state.filteredEntries.forEach(entry => {
+                const lang = entry.language || 'Other';
+                langCount.set(lang, (langCount.get(lang) || 0) + 1);
+            });
+            return Array.from(langCount.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6)
+                .map(([lang]) => ({
+                    language: lang,
+                    color: getLanguageColor(lang),
+                }));
+        }
+
+        /**
+         * 渲染图谱图例（语言颜色说明）
+         * @param {Array<{language: string, color: string}>} legends - 图例数据
+         */
+        function renderGraphLegend(legends) {
+            if (legends.length === 0) {
+                dom.graphLegend.innerHTML = '';
+                dom.graphLegend.style.display = 'none';
+                return;
+            }
+            dom.graphLegend.style.display = 'flex';
+            dom.graphLegend.innerHTML = legends.map(item =>
+                `<div class="graph-legend-item">
+                    <span class="graph-legend-dot" style="background-color: ${item.color}"></span>
+                    <span>${escapeHtml(item.language)}</span>
+                </div>`
+            ).join('');
+        }
+
+        /**
+         * 在右侧详情面板渲染项目详情
+         * @param {Object|null} entry - 项目数据，null 时显示占位提示
+         */
+        function renderGraphDetail(entry) {
+            if (!entry) {
+                dom.graphDetail.innerHTML = '<div class="graph-detail-placeholder">点击节点查看项目详情</div>';
+                return;
+            }
+
+            const scoreClass = entry.quality_score >= HIGH_SCORE_THRESHOLD ? 'high'
+                : entry.quality_score >= LOW_SCORE_THRESHOLD ? 'mid'
+                : 'low';
+
+            const topics = (entry.topics || [])
+                .slice(0, 8)
+                .map(topic => `<span class="tag">${escapeHtml(topic)}</span>`)
+                .join('');
+
+            dom.graphDetail.innerHTML = `
+                <div class="graph-detail-title">
+                    <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">
+                        ${escapeHtml(entry.full_name)}
+                    </a>
+                </div>
+                <p class="graph-detail-desc">${escapeHtml(entry.description || '（无描述）')}</p>
+                <div class="graph-detail-meta">
+                    ${entry.language ? `<span>${escapeHtml(entry.language)}</span>` : ''}
+                    <span>★ ${entry.stargazers_count || 0}</span>
+                    <span>⑂ ${entry.forks_count || 0}</span>
+                    <span class="card-score ${scoreClass}" style="font-size: 0.7rem;">质量 ${entry.quality_score}/5</span>
+                </div>
+                ${topics ? `<div class="graph-detail-tags">${topics}</div>` : ''}
+                <div class="graph-detail-actions">
+                    <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">GitHub</a>
+                    <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
+                    <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
+                </div>
+            `;
+        }
+
+        /**
+         * 切换视图（卡片 / 图谱）
+         * @param {string} view - 视图名称：'card' 或 'graph'
+         */
+        function switchView(view) {
+            state.currentView = view;
+            if (view === 'card') {
+                dom.tabCard.classList.add('active');
+                dom.tabGraph.classList.remove('active');
+                dom.cardView.style.display = '';
+                dom.graphView.classList.remove('active');
+            } else {
+                dom.tabGraph.classList.add('active');
+                dom.tabCard.classList.remove('active');
+                dom.cardView.style.display = 'none';
+                dom.graphView.classList.add('active');
+                renderGraph();
+            }
+        }
+
         // 事件绑定
         dom.searchButton.addEventListener('click', applyFilters);
+        dom.tabCard.addEventListener('click', () => switchView('card'));
+        dom.tabGraph.addEventListener('click', () => switchView('graph'));
         dom.resetButton.addEventListener('click', () => {
             dom.searchInput.value = '';
             dom.languageFilter.value = '';
