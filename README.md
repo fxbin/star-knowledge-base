@@ -19,18 +19,19 @@
 | **启发式模式**（默认，零门槛） | description + README 第一段 + topics + star 数评分 | 加权关键词匹配 | clone 即可跑，适合快速试用 |
 | **LLM 增强模式**（推荐） | LLM 生成中文摘要、场景标签、质量评分 | 关键词预筛 + LLM 语义精排 | 配了 LLM key 后自动启用，质量大幅提升 |
 
-推荐使用**免费的**智谱 GLM-4-Flash API（国内首选，完全免费，OpenAI 兼容接口）。
+如需启用 LLM 增强模式，可选用以下任意 OpenAI 兼容的 LLM 渠道（排名不分先后，按个人需求选择）：
 
-## 免费 LLM API 渠道推荐
+## LLM API 渠道参考
 
 | 渠道 | 费用 | OpenAI 兼容 | 国内访问 | base_url | model |
 |------|------|-------------|----------|----------|-------|
-| **智谱 GLM-4-Flash** ⭐ | **完全免费** | 是 | 稳定 | `https://open.bigmodel.cn/api/paas/v4` | `glm-4-flash` |
-| 智谱 GLM-4.7-Flash | 完全免费，性能更强 | 是 | 稳定 | `https://open.bigmodel.cn/api/paas/v4` | `glm-4.7-flash` |
+| 智谱 GLM-4.7-Flash | 永久免费 | 是 | 稳定 | `https://open.bigmodel.cn/api/paas/v4` | `glm-4.7-flash` |
 | Groq | 免费速率限制 | 是 | 需代理 | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
-| DeepSeek | 付费但极便宜 | 是 | 稳定 | `https://api.deepseek.com/v1` | `deepseek-chat` |
+| DeepSeek | 付费 | 是 | 稳定 | `https://api.deepseek.com/v1` | `deepseek-chat` |
 | OpenAI 官方 | 付费 | - | 需代理 | 留空 | `gpt-4o-mini` |
 | Anthropic Claude | 付费 | - | 需代理 | 留空 | `claude-3-5-sonnet-20241022` |
+
+> 注：智谱 GLM-4.5-Flash 已于 2026-01-30 下线，当前免费模型为 GLM-4.7-Flash。
 
 **关于 DeepWiki/Zread**：它们是"按需实时生成文档"的工具，没有批量预计算摘要的 API，不能替代 sync 阶段的 LLM。本项目通过 `deepwiki_url` / `zread_url` 字段让 agent 在查询时实时调用它们的 MCP，做深度理解（多跳推理），职责分离。
 
@@ -97,22 +98,6 @@ star-knowledge-base/
 └── README.md
 ```
 
-## MVP 计划（一周）
-
-| Day | 任务 | 成本 |
-|-----|------|------|
-| Day 1-2 | Actions 拉 star 数据，生成 JSON | 中 |
-| Day 3-4 | MCP server（search_starred + get_project_details） | 中 |
-| Day 5 | Pages 搜索页 + DeepWiki/Zread 外链 + SKILL.md | 低 |
-| Day 6-7 | 自用测试 | 低 |
-
-### 成功标准
-
-- 一周内使用次数 >= 5 次
-- 至少 3 次"发现了忘了 star 过的项目"
-- 主观推荐准确率 >= 3.5 分
-- Google 搜库行为减少 >= 30%
-
 ## 使用方式
 
 ### 1. Fork 或 Clone 仓库
@@ -132,7 +117,7 @@ cd star-knowledge-base
 | `LLM_PROVIDER` | 否 | LLM 提供商，不配则启发式模式 | `openai` |
 | `LLM_API_KEY` | 否 | LLM API 密钥，不配则启发式模式 | 智谱免费 key |
 | `LLM_BASE_URL` | 否 | LLM API 基础 URL（OpenAI 兼容接口用） | `https://open.bigmodel.cn/api/paas/v4` |
-| `LLM_MODEL` | 否 | 模型名称（不配用默认值） | `glm-4-flash` |
+| `LLM_MODEL` | 否 | 模型名称（不配用默认值） | `glm-4.7-flash` |
 
 **零门槛快速试用**：只配 `STAR_GITHUB_USERNAME` 就能跑，sync 会用启发式模式生成元数据。
 
@@ -141,7 +126,7 @@ cd star-knowledge-base
 LLM_PROVIDER=openai
 LLM_API_KEY=（你在 https://open.bigmodel.cn/ 注册拿到的 key）
 LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
-LLM_MODEL=glm-4-flash
+LLM_MODEL=glm-4.7-flash
 ```
 
 `GITHUB_TOKEN` 由 Actions 自动注入，无需手动配置。
@@ -187,7 +172,7 @@ LLM_MODEL=glm-4-flash
         "LLM_PROVIDER": "openai",
         "LLM_API_KEY": "你的智谱 key",
         "LLM_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
-        "LLM_MODEL": "glm-4-flash"
+        "LLM_MODEL": "glm-4.7-flash"
       }
     }
   }
@@ -255,7 +240,7 @@ cd public && python -m http.server 8000
 
 ## 适合人群
 
-star 200+ 的开发者。star 太少（< 100）手动翻就够了。
+star 项目较多、难以靠记忆定位的开发者。star 数量较少时手动翻阅也能解决，本工具的价值随 star 数量增长而提升。
 
 ## 圆桌讨论
 
