@@ -508,7 +508,9 @@
         }
 
         .pagination button {
-            padding: 8px 16px;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
             font-size: 0.8125rem;
             font-weight: 500;
             font-family: inherit;
@@ -518,9 +520,12 @@
             color: var(--color-text-secondary);
             cursor: pointer;
             transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .pagination button:hover:not(:disabled) {
+        .pagination button:hover:not(:disabled):not(.active) {
             background-color: var(--color-bg);
             color: var(--color-text);
             border-color: var(--color-border-strong);
@@ -531,10 +536,33 @@
             cursor: not-allowed;
         }
 
+        /* 当前页：使用强调色高亮 */
+        .pagination button.active {
+            background-color: var(--color-accent);
+            color: #ffffff;
+            border-color: var(--color-accent);
+            cursor: default;
+        }
+
+        /* 上一页/下一页：稍宽 */
+        .pagination button.nav-btn {
+            padding: 0 14px;
+        }
+
+        /* 省略号：非交互 */
+        .pagination-ellipsis {
+            min-width: 28px;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.8125rem;
+            user-select: none;
+        }
+
         .pagination-info {
             font-size: 0.8125rem;
             color: var(--color-text-secondary);
             font-variant-numeric: tabular-nums;
+            margin-left: var(--space-2);
         }
 
         /* ========== 页脚 ========== */
@@ -655,6 +683,51 @@
         }
 
         .graph-view.active {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .graph-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+        }
+
+        .graph-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .graph-toggle-btn {
+            padding: 5px 12px;
+            font-size: 0.8125rem;
+            font-family: inherit;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .graph-toggle-btn:hover {
+            background-color: var(--color-bg);
+            border-color: var(--color-border-strong);
+            color: var(--color-text);
+        }
+
+        .graph-toggle-btn.active {
+            background-color: var(--color-accent-subtle);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .graph-content {
             display: flex;
             gap: var(--space-4);
         }
@@ -876,12 +949,21 @@
 
         <!-- 图谱视图 -->
         <div id="graphView" class="graph-view">
-            <div class="graph-container">
-                <div id="graphCanvas"></div>
-                <div class="graph-legend" id="graphLegend"></div>
+            <div class="graph-toolbar">
+                <div class="graph-info" id="graphInfo">加载中...</div>
+                <div>
+                    <button class="graph-toggle-btn active" id="graphToggleQuality">仅高质量</button>
+                    <button class="graph-toggle-btn" id="graphToggleAll">显示全部</button>
+                </div>
             </div>
-            <div class="graph-detail" id="graphDetail">
-                <div class="graph-detail-placeholder">点击节点查看项目详情</div>
+            <div class="graph-content">
+                <div class="graph-container">
+                    <div id="graphCanvas"></div>
+                    <div class="graph-legend" id="graphLegend"></div>
+                </div>
+                <div class="graph-detail" id="graphDetail">
+                    <div class="graph-detail-placeholder">点击节点查看项目详情</div>
+                </div>
             </div>
         </div>
     </main>
@@ -915,7 +997,9 @@
         const LOW_SCORE_THRESHOLD = 2;
 
         // 图谱相关常量
-        const GRAPH_NODE_THRESHOLD = 200;
+        const GRAPH_NODE_THRESHOLD = 150;
+        const GRAPH_DEFAULT_MIN_SCORE = 3;
+        const GRAPH_MAX_NODES = 300;
         const TOPIC_MIN_PROJECTS = 1;
         const TOPIC_LABEL_MAX_LEN = 12;
         const PROJECT_LABEL_MAX_LEN = 10;
@@ -940,6 +1024,7 @@
             currentView: 'card',
             graphInstance: null,
             graphRendered: false,
+            graphShowAll: false,
         };
 
         // DOM 引用
@@ -964,6 +1049,9 @@
             graphCanvas: document.getElementById('graphCanvas'),
             graphLegend: document.getElementById('graphLegend'),
             graphDetail: document.getElementById('graphDetail'),
+            graphInfo: document.getElementById('graphInfo'),
+            graphToggleQuality: document.getElementById('graphToggleQuality'),
+            graphToggleAll: document.getElementById('graphToggleAll'),
         };
 
         /**
@@ -1126,6 +1214,7 @@
 
         /**
          * 渲染分页控件
+         * 布局：上一页 | 首页 | … | 当前页±2 | … | 末页 | 下一页 | 页码信息
          */
         function renderPagination(totalPages) {
             if (totalPages <= 1) {
@@ -1135,31 +1224,82 @@
             dom.pagination.style.display = 'flex';
             dom.pagination.innerHTML = '';
 
+            const current = state.currentPage;
+
+            // 跳转到指定页的统一处理函数
+            const goToPage = (page) => {
+                state.currentPage = page;
+                renderResults();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            // 上一页按钮
             const prevButton = document.createElement('button');
-            prevButton.textContent = '← 上一页';
-            prevButton.disabled = state.currentPage === 1;
-            prevButton.addEventListener('click', () => {
-                state.currentPage--;
-                renderResults();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            prevButton.textContent = '←';
+            prevButton.className = 'nav-btn';
+            prevButton.title = '上一页';
+            prevButton.disabled = current === 1;
+            prevButton.addEventListener('click', () => goToPage(current - 1));
+            dom.pagination.appendChild(prevButton);
+
+            // 计算需要显示的页码集合
+            // 显示规则：首页 + 当前页前 2 页 + 当前页 + 当前页后 2 页 + 末页
+            // 相邻处用省略号填充
+            const pageItems = buildPageItems(current, totalPages);
+            pageItems.forEach((item) => {
+                if (item === '...') {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'pagination-ellipsis';
+                    ellipsis.textContent = '…';
+                    dom.pagination.appendChild(ellipsis);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.textContent = String(item);
+                    if (item === current) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.addEventListener('click', () => goToPage(item));
+                    }
+                    dom.pagination.appendChild(btn);
+                }
             });
 
+            // 下一页按钮
             const nextButton = document.createElement('button');
-            nextButton.textContent = '下一页 →';
-            nextButton.disabled = state.currentPage === totalPages;
-            nextButton.addEventListener('click', () => {
-                state.currentPage++;
-                renderResults();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+            nextButton.textContent = '→';
+            nextButton.className = 'nav-btn';
+            nextButton.title = '下一页';
+            nextButton.disabled = current === totalPages;
+            nextButton.addEventListener('click', () => goToPage(current + 1));
+            dom.pagination.appendChild(nextButton);
 
+            // 页码信息（用于辅助定位）
             const pageInfo = document.createElement('span');
             pageInfo.className = 'pagination-info';
-            pageInfo.textContent = `${state.currentPage} / ${totalPages}`;
-
-            dom.pagination.appendChild(prevButton);
+            pageInfo.textContent = `${current} / ${totalPages}`;
             dom.pagination.appendChild(pageInfo);
-            dom.pagination.appendChild(nextButton);
+        }
+
+        /**
+         * 构建分页页码展示序列
+         * 返回数组，元素为数字页码或字符串 '...' 表示省略号
+         * 规则：始终包含首页与末页；当前页前后各保留 2 页；中间用省略号衔接
+         */
+        function buildPageItems(current, total) {
+            const items = [];
+            const range = 2;
+            const left = Math.max(1, current - range);
+            const right = Math.min(total, current + range);
+
+            for (let i = 1; i <= total; i++) {
+                if (i === 1 || i === total || (i >= left && i <= right)) {
+                    items.push(i);
+                } else if (items[items.length - 1] !== '...') {
+                    // 仅在尚未添加省略号时插入，避免连续省略号
+                    items.push('...');
+                }
+            }
+            return items;
         }
 
         /**
@@ -1270,10 +1410,25 @@
          *   - 无 topics 但有 language 的项目：language 作为聚类中心
          *   - 都无的项目：归入"其他"聚类
          *
-         * @returns {{nodes: Array, edges: Array}} 图谱节点和边
+         * 性能策略:
+         *   - 默认只渲染质量分 >= GRAPH_DEFAULT_MIN_SCORE 的项目
+         *   - 若结果仍超过 GRAPH_MAX_NODES，按质量分降序截断
+         *   - graphShowAll=true 时渲染全部（用户点击"显示全部"后）
+         *
+         * @returns {{nodes: Array, edges: Array, total: number, displayed: number}} 图谱数据
          */
         function buildGraphData() {
-            const entries = state.filteredEntries;
+            let entries = state.filteredEntries;
+            const total = entries.length;
+
+            if (!state.graphShowAll) {
+                const filtered = entries.filter(e => (e.quality_score || 0) >= GRAPH_DEFAULT_MIN_SCORE);
+                entries = filtered.length > 0 ? filtered : entries.slice(0, GRAPH_MAX_NODES);
+                if (entries.length > GRAPH_MAX_NODES) {
+                    entries = entries.slice().sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0)).slice(0, GRAPH_MAX_NODES);
+                }
+            }
+
             const topicMap = new Map();
             const projectNodes = [];
             const edges = [];
@@ -1330,6 +1485,8 @@
             return {
                 nodes: [...topicNodes, ...projectNodes],
                 edges: edges,
+                total: total,
+                displayed: entries.length,
             };
         }
 
@@ -1360,6 +1517,7 @@
         function renderGraph() {
             if (state.filteredEntries.length === 0) {
                 dom.graphCanvas.innerHTML = '';
+                dom.graphInfo.textContent = '没有匹配的项目';
                 renderGraphDetail(null);
                 renderGraphLegend([]);
                 return;
@@ -1367,6 +1525,8 @@
 
             const graphData = buildGraphData();
             const animate = graphData.nodes.length <= GRAPH_NODE_THRESHOLD;
+
+            dom.graphInfo.textContent = `显示 ${graphData.displayed} / ${graphData.total} 个项目 · ${graphData.nodes.length} 个节点`;
 
             if (state.graphInstance) {
                 state.graphInstance.destroy();
@@ -1612,6 +1772,18 @@
         dom.searchButton.addEventListener('click', applyFilters);
         dom.tabCard.addEventListener('click', () => switchView('card'));
         dom.tabGraph.addEventListener('click', () => switchView('graph'));
+        dom.graphToggleQuality.addEventListener('click', () => {
+            state.graphShowAll = false;
+            dom.graphToggleQuality.classList.add('active');
+            dom.graphToggleAll.classList.remove('active');
+            renderGraph();
+        });
+        dom.graphToggleAll.addEventListener('click', () => {
+            state.graphShowAll = true;
+            dom.graphToggleAll.classList.add('active');
+            dom.graphToggleQuality.classList.remove('active');
+            renderGraph();
+        });
         dom.resetButton.addEventListener('click', () => {
             dom.searchInput.value = '';
             dom.languageFilter.value = '';
