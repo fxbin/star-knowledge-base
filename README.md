@@ -78,10 +78,8 @@ star-knowledge-base/
 │   └── workflows/
 │       └── sync-stars.yml          # GitHub Actions: 定时拉取 star 数据
 ├── docs/
-│   ├── 圆桌讨论-GitHub-Pages-Star-Agent-可行性评估.md      # Round 1-3 讨论报告
-│   ├── 圆桌讨论-GitHub-Pages-Star-Agent-可行性评估-v3.md   # 完整 6 轮讨论报告（含纠错）
-│   ├── roundtable-github-pages-agent-20260717.json         # Memory JSON v1
-│   └── roundtable-github-pages-agent-v3-20260717.json      # Memory JSON v3（完整版）
+│   └── decisions/
+│       └── 圆桌讨论-GitHub-Pages-Star-Agent-可行性评估-v3.md   # 完整 6 轮讨论报告（含纠错）
 ├── public/                          # GitHub Pages 静态文件
 │   ├── index.html                   # 搜索页（Vanilla JS）
 │   ├── data.json                    # star 数据（Actions 自动生成，gitignore）
@@ -90,7 +88,6 @@ star-knowledge-base/
 │   └── star-first-habit/
 │       └── SKILL.md                 # Agent Skill: 教 agent 优先查 star 知识库
 ├── src/
-│   ├── __init__.py                  # 包标识
 │   ├── llm_client.py                # LLM 客户端抽象（OpenAI / Anthropic 可配置）
 │   ├── sync_stars.py                # Actions 脚本: 拉数据 + LLM 元数据推断
 │   └── mcp_server.py                # MCP server: 暴露 search_starred / get_project_details
@@ -267,7 +264,7 @@ star 200+ 的开发者。star 太少（< 100）手动翻就够了。
 - Andrej Karpathy - Agent 架构视角，MCP 协议和技术深度
 - 资深开发者工具产品经理 - 用户需求和验证指标
 
-完整讨论报告见 docs/ 目录。
+完整讨论报告见 [docs/decisions/](docs/decisions/) 目录。
 
 ## License
 
