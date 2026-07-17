@@ -617,6 +617,197 @@
             text-decoration: underline;
         }
 
+        /* ========== 接入说明按钮 ========== */
+        .access-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 6px 12px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+
+        .access-button:hover {
+            background-color: var(--color-accent-subtle);
+            color: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        /* ========== Modal（接入说明） ========== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(28, 25, 23, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: var(--space-4);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 640px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-5) var(--space-6);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            line-height: 1;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            padding: var(--space-1);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--color-text);
+            background-color: var(--color-bg);
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: var(--space-1);
+            padding: 0 var(--space-6);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .modal-tab {
+            padding: var(--space-3) var(--space-4);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .modal-tab:hover {
+            color: var(--color-text);
+        }
+
+        .modal-tab.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        .modal-body {
+            padding: var(--space-5) var(--space-6);
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-tab-content {
+            display: none;
+        }
+
+        .modal-tab-content.active {
+            display: block;
+        }
+
+        .modal-desc {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-3);
+            line-height: 1.6;
+        }
+
+        .code-block-wrapper {
+            position: relative;
+            margin-bottom: var(--space-4);
+        }
+
+        .code-block {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: var(--space-2);
+            right: var(--space-2);
+            padding: 4px 8px;
+            font-size: 0.6875rem;
+            font-family: inherit;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .copy-button:hover {
+            background-color: var(--color-accent-subtle);
+            color: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        .copy-button.copied {
+            background-color: var(--color-accent);
+            color: #ffffff;
+            border-color: var(--color-accent);
+        }
+
+        .modal-section-title {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: var(--space-2);
+            margin-top: var(--space-4);
+        }
+
+        .modal-section-title:first-child {
+            margin-top: 0;
+        }
+
         /* ========== 响应式 ========== */
         @media (max-width: 640px) {
             .header-container {
@@ -901,7 +1092,7 @@
                 <div class="header-logo">★</div>
                 <div>
                     <div class="header-title">Star Knowledge Base</div>
-                    <div class="header-subtitle">让你的 GitHub Stars 从收藏夹变成 agent 可检索的个人代码工具箱</div>
+                    <div class="header-subtitle">个人 GitHub Star 知识库 · agent 可检索</div>
                 </div>
             </div>
             <div class="header-stats">
@@ -917,9 +1108,90 @@
                     <span>更新时间</span>
                     <span class="header-stat-value" id="updateTime">-</span>
                 </div>
+                <button class="access-button" id="accessButton" title="查看 agent 接入方式">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    接入说明
+                </button>
             </div>
         </div>
     </header>
+
+    <!-- 接入说明 Modal -->
+    <div class="modal-overlay" id="accessModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Agent 接入说明</div>
+                <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" id="tabMcp">MCP Server</button>
+                <button class="modal-tab" id="tabSkill">Agent Skill</button>
+            </div>
+            <div class="modal-body">
+                <!-- MCP Tab -->
+                <div class="modal-tab-content active" id="contentMcp">
+                    <p class="modal-desc">
+                        在你的 agent（Trae / Cursor / Claude Code / Codex 等）的 MCP 配置中加入以下内容。
+                        零门槛配置只需 <code>STAR_DATA_URL</code>，搜索走关键词匹配；推荐增强配置接入智谱 GLM-4.7-Flash（永久免费）以获得语义搜索。
+                    </p>
+                    <div class="modal-section-title">零门槛配置（关键词匹配）</div>
+                    <div class="code-block-wrapper">
+                        <button class="copy-button" data-copy-target="mcp-basic">复制</button>
+                        <pre class="code-block" id="mcp-basic">{
+  "mcpServers": {
+    "star-knowledge": {
+      "command": "python",
+      "args": ["/absolute/path/to/star-knowledge-base/src/mcp_server.py"],
+      "env": {
+        "STAR_DATA_URL": "https://fxbin.github.io/star-knowledge-base/data.json"
+      }
+    }
+  }
+}</pre>
+                    </div>
+                    <div class="modal-section-title">推荐增强配置（智谱免费 API · 语义搜索）</div>
+                    <div class="code-block-wrapper">
+                        <button class="copy-button" data-copy-target="mcp-enhanced">复制</button>
+                        <pre class="code-block" id="mcp-enhanced">{
+  "mcpServers": {
+    "star-knowledge": {
+      "command": "python",
+      "args": ["/absolute/path/to/star-knowledge-base/src/mcp_server.py"],
+      "env": {
+        "STAR_DATA_URL": "https://fxbin.github.io/star-knowledge-base/data.json",
+        "LLM_PROVIDER": "openai",
+        "LLM_API_KEY": "你的智谱 key",
+        "LLM_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+        "LLM_MODEL": "glm-4.7-flash"
+      }
+    }
+  }
+}</pre>
+                    </div>
+                    <p class="modal-desc">
+                        详细环境变量说明请查阅
+                        <a href="https://github.com/fxbin/star-knowledge-base#本地配置-mcp-server" target="_blank" rel="noopener">GitHub 仓库 README</a>。
+                    </p>
+                </div>
+
+                <!-- Skill Tab -->
+                <div class="modal-tab-content" id="contentSkill">
+                    <p class="modal-desc">
+                        <code>star-first-habit</code> Skill 教 agent 在需要某个库时优先查 star 知识库，而非 Google。
+                        跨平台支持 Claude Code / Cursor / Trae / Codex / OpenCode 等 40+ 工具。
+                    </p>
+                    <div class="modal-section-title">安装命令</div>
+                    <div class="code-block-wrapper">
+                        <button class="copy-button" data-copy-target="skill-cmd">复制</button>
+                        <pre class="code-block" id="skill-cmd">npx skills add fxbin/star-knowledge-base --skill star-first-habit</pre>
+                    </div>
+                    <p class="modal-desc">
+                        安装后 agent 在你提到"需要一个 XX 库"时会优先检索你的 star 知识库，匹配到则直接推荐，未匹配才走 Google。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 主内容区 -->
     <main class="main">
@@ -960,7 +1232,7 @@
                 </div>
 
                 <div class="stats">
-                    <span>共 <span class="stats-count" id="statsCount">0</span> 个项目</span>
+                    <span>筛选 <span class="stats-count" id="statsCount">0</span> 个</span>
                     <span id="pageInfo"></span>
                 </div>
             </div>
@@ -1089,6 +1361,13 @@
             totalCount: document.getElementById('totalCount'),
             langCount: document.getElementById('langCount'),
             updateTime: document.getElementById('updateTime'),
+            accessButton: document.getElementById('accessButton'),
+            accessModal: document.getElementById('accessModal'),
+            modalClose: document.getElementById('modalClose'),
+            tabMcp: document.getElementById('tabMcp'),
+            tabSkill: document.getElementById('tabSkill'),
+            contentMcp: document.getElementById('contentMcp'),
+            contentSkill: document.getElementById('contentSkill'),
             tabCard: document.getElementById('tabCard'),
             tabGraph: document.getElementById('tabGraph'),
             cardView: document.getElementById('cardView'),
@@ -1906,10 +2185,104 @@
             }
         }
 
+        /**
+         * 打开接入说明 Modal
+         */
+        function openAccessModal() {
+            dom.accessModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /**
+         * 关闭接入说明 Modal
+         */
+        function closeAccessModal() {
+            dom.accessModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        /**
+         * 切换接入说明 Modal 的 tab（MCP / Skill）
+         * @param {string} tab - 'mcp' 或 'skill'
+         */
+        function switchAccessTab(tab) {
+            const isMcp = tab === 'mcp';
+            dom.tabMcp.classList.toggle('active', isMcp);
+            dom.tabSkill.classList.toggle('active', !isMcp);
+            dom.contentMcp.classList.toggle('active', isMcp);
+            dom.contentSkill.classList.toggle('active', !isMcp);
+        }
+
+        /**
+         * 复制代码块内容到剪贴板
+         * 复制成功后按钮短暂显示"已复制"反馈
+         * @param {HTMLButtonElement} button - 触发复制的按钮，通过 data-copy-target 定位目标代码块
+         */
+        function copyCodeBlock(button) {
+            const targetId = button.getAttribute('data-copy-target');
+            const codeEl = document.getElementById(targetId);
+            if (!codeEl) return;
+            const text = codeEl.textContent;
+            const copyFallback = () => {
+                // 降级方案：execCommand（兼容旧浏览器 / 非 HTTPS 环境）
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (e) {
+                    // 忽略复制失败
+                }
+                document.body.removeChild(textarea);
+            };
+            const showCopied = () => {
+                const originalText = button.textContent;
+                button.textContent = '已复制';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(showCopied).catch(() => {
+                    copyFallback();
+                    showCopied();
+                });
+            } else {
+                copyFallback();
+                showCopied();
+            }
+        }
+
         // 事件绑定
         dom.searchButton.addEventListener('click', applyFilters);
         dom.tabCard.addEventListener('click', () => switchView('card'));
         dom.tabGraph.addEventListener('click', () => switchView('graph'));
+
+        // 接入说明 Modal 交互
+        dom.accessButton.addEventListener('click', () => openAccessModal());
+        dom.modalClose.addEventListener('click', () => closeAccessModal());
+        // 点击遮罩关闭
+        dom.accessModal.addEventListener('click', (event) => {
+            if (event.target === dom.accessModal) closeAccessModal();
+        });
+        // ESC 关闭
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && dom.accessModal.classList.contains('active')) {
+                closeAccessModal();
+            }
+        });
+        // Tab 切换
+        dom.tabMcp.addEventListener('click', () => switchAccessTab('mcp'));
+        dom.tabSkill.addEventListener('click', () => switchAccessTab('skill'));
+        // 复制按钮（事件委托，避免给每个按钮单独绑定）
+        document.querySelectorAll('.copy-button').forEach(btn => {
+            btn.addEventListener('click', () => copyCodeBlock(btn));
+        });
         dom.graphToggleQuality.addEventListener('click', () => {
             state.graphShowAll = false;
             dom.graphToggleQuality.classList.add('active');
