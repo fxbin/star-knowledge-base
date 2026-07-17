@@ -996,6 +996,10 @@
         const HIGH_SCORE_THRESHOLD = 4;
         const LOW_SCORE_THRESHOLD = 2;
 
+        // 分页相关常量
+        // 当总页数不超过该阈值时，直接展示全部页码，避免出现仅省略单页的尴尬省略号
+        const PAGINATION_COMPACT_THRESHOLD = 7;
+
         // 图谱相关常量
         const GRAPH_NODE_THRESHOLD = 150;
         const GRAPH_DEFAULT_MIN_SCORE = 3;
@@ -1284,8 +1288,17 @@
          * 构建分页页码展示序列
          * 返回数组，元素为数字页码或字符串 '...' 表示省略号
          * 规则：始终包含首页与末页；当前页前后各保留 2 页；中间用省略号衔接
+         * 当总页数较少（不超过 PAGINATION_COMPACT_THRESHOLD）时直接展示全部页码，
+         * 避免出现仅省略单个页码的尴尬情况
          */
         function buildPageItems(current, total) {
+            // 总页数较少时直接全部展示
+            if (total <= PAGINATION_COMPACT_THRESHOLD) {
+                const all = [];
+                for (let i = 1; i <= total; i++) all.push(i);
+                return all;
+            }
+
             const items = [];
             const range = 2;
             const left = Math.max(1, current - range);
