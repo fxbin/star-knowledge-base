@@ -59,14 +59,20 @@ star-knowledge-base/
 │   ├── roundtable-github-pages-agent-20260717.json         # Memory JSON v1
 │   └── roundtable-github-pages-agent-v3-20260717.json      # Memory JSON v3（完整版）
 ├── public/                          # GitHub Pages 静态文件
-│   ├── index.html                   # 搜索页（TODO）
-│   └── data.json                    # star 数据（Actions 自动生成）
+│   ├── index.html                   # 搜索页（Vanilla JS）
+│   ├── data.json                    # star 数据（Actions 自动生成，gitignore）
+│   └── data.example.json            # 数据结构示例
 ├── skills/
 │   └── star-first-habit/
 │       └── SKILL.md                 # Agent Skill: 教 agent 优先查 star 知识库
 ├── src/
+│   ├── __init__.py                  # 包标识
+│   ├── llm_client.py                # LLM 客户端抽象（OpenAI / Anthropic 可配置）
 │   ├── sync_stars.py                # Actions 脚本: 拉数据 + LLM 元数据推断
-│   └── mcp_server.py                # MCP server: 暴露 search_starred 等工具
+│   └── mcp_server.py                # MCP server: 暴露 search_starred / get_project_details
+├── .env.example                     # 环境变量模板
+├── .gitignore
+├── requirements.txt                 # Python 依赖
 └── README.md
 ```
 
@@ -88,12 +94,114 @@ star-knowledge-base/
 
 ## 使用方式
 
-1. clone repo
-2. 配置 GitHub token（Actions secrets）
-3. 配置 LLM API key（Actions secrets，用于元数据推断）
-4. Actions 自动运行，生成 data.json 并部署到 Pages
-5. MCP server 配置指向 Pages 上的 JSON URL
-6. npx skills add 安装 Skill
+### 1. Fork 或 Clone 仓库
+
+```bash
+git clone https://github.com/<your-username>/star-knowledge-base.git
+cd star-knowledge-base
+```
+
+### 2. 配置 GitHub Actions Secrets
+
+在仓库 `Settings → Secrets and variables → Actions` 中添加以下 Secrets：
+
+| Secret 名称 | 说明 | 示例 |
+|--------------|------|------|
+| `STAR_GITHUB_USERNAME` | 要拉取 starred 的 GitHub 用户名 | `octocat` |
+| `LLM_PROVIDER` | LLM 提供商 | `openai` 或 `anthropic` |
+| `LLM_API_KEY` | LLM API 密钥 | `sk-xxx` |
+| `LLM_BASE_URL` | LLM API 基础 URL（可选，用于 OpenAI 兼容接口） | `https://api.deepseek.com/v1` |
+| `LLM_MODEL` | 模型名称（可选，有默认值） | `gpt-4o-mini` / `claude-3-5-sonnet-20241022` |
+
+`GITHUB_TOKEN` 由 Actions 自动注入，无需手动配置。
+
+### 3. 启用 GitHub Pages
+
+在仓库 `Settings → Pages → Build and deployment → Source` 选择 `Deploy from a branch`，分支选 `gh-pages`，目录选 `/ (root)`。首次 Actions 运行后会自动创建 `gh-pages` 分支。
+
+### 4. 手动触发首次同步
+
+进入仓库 `Actions` 页面，选择 `Sync Stars` workflow，点击 `Run workflow` 即可手动触发首次同步。之后每天 UTC 02:00（北京时间 10:00）自动运行。
+
+### 5. 本地配置 MCP server
+
+在你的 agent（Trae / Cursor / Claude Code / Codex 等）的 MCP 配置中加入：
+
+```json
+{
+  "mcpServers": {
+    "star-knowledge": {
+      "command": "python",
+      "args": ["/absolute/path/to/star-knowledge-base/src/mcp_server.py"],
+      "env": {
+        "STAR_DATA_URL": "https://<your-username>.github.io/star-knowledge-base/data.json",
+        "LLM_PROVIDER": "openai",
+        "LLM_API_KEY": "sk-xxx",
+        "LLM_MODEL": "gpt-4o-mini"
+      }
+    }
+  }
+}
+```
+
+环境变量说明：
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `STAR_DATA_URL` | 二选一 | data.json 的 URL（生产环境） |
+| `STAR_DATA_LOCAL` | 二选一 | 本地 data.json 路径（开发调试） |
+| `STAR_REFRESH_SECONDS` | 否 | 数据刷新间隔，默认 3600 |
+| `LLM_PROVIDER` | 是 | `openai` 或 `anthropic` |
+| `LLM_API_KEY` | 是 | LLM API 密钥 |
+| `LLM_BASE_URL` | 否 | OpenAI 兼容接口的基础 URL |
+| `LLM_MODEL` | 否 | 模型名称，有默认值 |
+
+### 6. 安装 Agent Skill（可选）
+
+`star-first-habit` Skill 教 agent 在需要某个库时优先查 star 知识库，而非 Google：
+
+```bash
+npx skills add <your-username>/star-knowledge-base --skill star-first-habit
+```
+
+Skill 跨平台支持 Claude Code / Cursor / Trae / Codex / OpenCode 等 40+ 工具。
+
+### 7. 本地开发调试
+
+```bash
+# 安装依赖
+pip install -r requirements.txt
+
+# 本地测试 sync_stars（需要 .env 或手动 export 环境变量）
+cp .env.example .env  # 编辑后填入真实配置
+python src/sync_stars.py
+
+# 本地测试 MCP server（指向本地生成的 data.json）
+export STAR_DATA_LOCAL=./public/data.json
+python src/mcp_server.py
+
+# 本地预览 Pages
+cd public && python -m http.server 8000
+# 浏览器打开 http://localhost:8000
+```
+
+## 环境变量速查
+
+### Actions（部署时）
+
+| 变量 | 来源 | 用途 |
+|------|------|------|
+| `GITHUB_TOKEN` | Actions 自动注入 | 调用 GitHub starred API + push 到 gh-pages |
+| `STAR_GITHUB_USERNAME` | 用户配置 | 指定要拉取的用户 |
+| `LLM_PROVIDER` | 用户配置 | LLM 提供商选择 |
+| `LLM_API_KEY` | 用户配置 | LLM 鉴权 |
+| `LLM_BASE_URL` | 用户配置 | OpenAI 兼容接口地址 |
+| `LLM_MODEL` | 用户配置 | 模型名称 |
+| `FORCE_REFRESH` | workflow_dispatch 输入 | 强制重新生成所有元数据 |
+
+### MCP server（运行时）
+
+详见上文「本地配置 MCP server」章节。
 
 ## 适合人群
 

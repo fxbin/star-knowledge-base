@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-17T02:00:00.000000+00:00",
+  "total": 2,
+  "entries": [
+    {
+      "full_name": "octocat/Hello-World",
+      "name": "Hello-World",
+      "owner": "octocat",
+      "html_url": "https://github.com/octocat/Hello-World",
+      "description": "My first repository on GitHub.",
+      "language": "JavaScript",
+      "topics": ["demo", "example"],
+      "stargazers_count": 2456,
+      "forks_count": 12450,
+      "open_issues_count": 12,
+      "pushed_at": "2026-06-15T10:30:00Z",
+      "starred_at": "2026-07-10T03:00:00Z",
+      "summary": "GitHub 官方的示例仓库，演示基础 Git 工作流和仓库管理功能。",
+      "use_cases": ["Git 入门", "GitHub 演示", "教学示例"],
+      "quality_score": 3,
+      "deepwiki_url": "https://deepwiki.com/octocat/Hello-World",
+      "zread_url": "https://zread.ai/octocat/Hello-World",
+      "metadata_generated_at": "2026-07-17T02:00:05.123456+00:00",
+      "metadata_generator_model": "gpt-4o-mini"
+    },
+    {
+      "full_name": "modelcontextprotocol/python-sdk",
+      "name": "python-sdk",
+      "owner": "modelcontextprotocol",
+      "html_url": "https://github.com/modelcontextprotocol/python-sdk",
+      "description": "The official Python SDK for the Model Context Protocol.",
+      "language": "Python",
+      "topics": ["mcp", "agent", "llm", "sdk", "protocol"],
+      "stargazers_count": 8500,
+      "forks_count": 620,
+      "open_issues_count": 35,
+      "pushed_at": "2026-07-14T08:00:00Z",
+      "starred_at": "2026-06-20T12:00:00Z",
+      "summary": "MCP 官方 Python SDK，用于构建 MCP server 和 client，让 agent 接入外部数据源和工具。",
+      "use_cases": ["构建 MCP server", "Agent 工具集成", "LLM 数据访问"],
+      "quality_score": 5,
+      "deepwiki_url": "https://deepwiki.com/modelcontextprotocol/python-sdk",
+      "zread_url": "https://zread.ai/modelcontextprotocol/python-sdk",
+      "metadata_generated_at": "2026-07-17T02:00:08.654321+00:00",
+      "metadata_generator_model": "gpt-4o-mini"
+    }
+  ]
+}
