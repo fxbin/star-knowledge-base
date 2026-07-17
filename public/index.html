@@ -498,6 +498,39 @@
             to { transform: rotate(360deg); }
         }
 
+        /* ========== 骨架屏（首次加载占位） ========== */
+        /* 编辑级极简主义：静态浅灰块，不用渐变动画 */
+        .skeleton-card {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-5);
+            margin-bottom: var(--space-4);
+        }
+
+        .skeleton-line {
+            height: 10px;
+            background-color: var(--color-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-2);
+        }
+
+        .skeleton-line.title {
+            width: 45%;
+            height: 16px;
+            margin-bottom: var(--space-3);
+        }
+
+        .skeleton-line.short {
+            width: 70%;
+        }
+
+        .skeleton-line.meta {
+            width: 90%;
+            height: 8px;
+            margin-top: var(--space-3);
+        }
+
         /* ========== 分页 ========== */
         .pagination {
             display: flex;
@@ -1000,6 +1033,16 @@
         // 当总页数不超过该阈值时，直接展示全部页码，避免出现仅省略单页的尴尬省略号
         const PAGINATION_COMPACT_THRESHOLD = 7;
 
+        // 源码入口按钮的代码图标（Feather icons "code"，内联 SVG 避免外部依赖）
+        // 用于卡片底部和图谱详情面板的"源码"按钮，语义比"GitHub"品牌名更直观
+        const CODE_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>';
+
+        // 加载优化相关常量
+        // localStorage 缓存 key：用于 stale-while-revalidate 策略，秒开旧数据 + 后台静默拉新
+        const DATA_CACHE_KEY = 'skb_data_v1';
+        // 骨架屏占位卡片数量，仅首次无缓存加载时显示
+        const SKELETON_CARD_COUNT = 6;
+
         // 图谱相关常量
         const GRAPH_NODE_THRESHOLD = 150;
         const GRAPH_DEFAULT_MIN_SCORE = 3;
@@ -1081,32 +1124,114 @@
 
         /**
          * 加载 data.json
-         * 失败时显示错误并提示用户检查 Pages 是否已部署。
+         * 采用 stale-while-revalidate 策略：
+         *   - 有本地缓存：立即渲染旧数据秒开，后台静默拉新并更新
+         *   - 无本地缓存：显示骨架屏，等待首次加载完成
+         * 失败时若有缓存则保留旧数据，无缓存则显示错误提示。
          */
         async function loadData() {
-            showLoading('正在加载 star 数据...');
-            try {
-                const response = await fetch(DATA_URL, { cache: 'no-cache' });
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                const data = await response.json();
-                state.allEntries = data.entries || [];
-                state.languages = new Set(
-                    state.allEntries
-                        .map(entry => entry.language)
-                        .filter(Boolean)
-                        .sort()
-                );
-                populateLanguageFilter();
-                updateHeaderStats(data);
+            const cached = readDataCache();
+            if (cached) {
+                // 有缓存：立即渲染旧数据
+                applyData(cached.data);
                 showStatus('');
-                applyFilters();
-            } catch (error) {
-                showStatus('数据加载失败：' + error.message + '。请确认 GitHub Actions 已运行并部署到 Pages。', true);
-                state.allEntries = [];
-                dom.statsCount.textContent = '0';
+                // 后台静默拉新（不阻塞用户操作）
+                try {
+                    const response = await fetch(DATA_URL, { cache: 'default' });
+                    if (response.ok) {
+                        const data = await response.json();
+                        writeDataCache(data);
+                        applyData(data);
+                    }
+                } catch (e) {
+                    // 后台拉新失败：保留旧数据，静默忽略
+                }
+            } else {
+                // 无缓存：显示骨架屏，等待首次加载
+                showSkeleton();
+                try {
+                    const response = await fetch(DATA_URL, { cache: 'default' });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    const data = await response.json();
+                    writeDataCache(data);
+                    applyData(data);
+                    showStatus('');
+                } catch (error) {
+                    showStatus('数据加载失败：' + error.message + '。请确认 GitHub Actions 已运行并部署到 Pages。', true);
+                    state.allEntries = [];
+                    dom.statsCount.textContent = '0';
+                    dom.results.innerHTML = '';
+                }
             }
+        }
+
+        /**
+         * 将数据应用到 UI 状态（提取自 loadData，供缓存命中和首次加载复用）
+         * @param {Object} data - data.json 解析后的对象
+         */
+        function applyData(data) {
+            state.allEntries = data.entries || [];
+            state.languages = new Set(
+                state.allEntries
+                    .map(entry => entry.language)
+                    .filter(Boolean)
+                    .sort()
+            );
+            populateLanguageFilter();
+            updateHeaderStats(data);
+            applyFilters();
+        }
+
+        /**
+         * 读取 localStorage 中的数据缓存
+         * @returns {Object|null} 缓存对象（含 data 和 timestamp），读取失败返回 null
+         */
+        function readDataCache() {
+            try {
+                const raw = localStorage.getItem(DATA_CACHE_KEY);
+                if (!raw) return null;
+                const cache = JSON.parse(raw);
+                if (!cache || !cache.data) return null;
+                return cache;
+            } catch {
+                return null;
+            }
+        }
+
+        /**
+         * 写入数据缓存到 localStorage
+         * localStorage 满或被禁用时静默忽略，不影响主流程
+         * @param {Object} data - data.json 解析后的对象
+         */
+        function writeDataCache(data) {
+            try {
+                localStorage.setItem(DATA_CACHE_KEY, JSON.stringify({
+                    data: data,
+                    timestamp: Date.now()
+                }));
+            } catch {
+                // localStorage 满或禁用，静默忽略
+            }
+        }
+
+        /**
+         * 显示骨架屏占位卡片
+         * 仅在首次无缓存加载时使用，改善感知加载性能
+         */
+        function showSkeleton() {
+            const skeletonHtml = Array.from({ length: SKELETON_CARD_COUNT }, () =>
+                '<div class="skeleton-card">' +
+                    '<div class="skeleton-line title"></div>' +
+                    '<div class="skeleton-line"></div>' +
+                    '<div class="skeleton-line short"></div>' +
+                    '<div class="skeleton-line meta"></div>' +
+                '</div>'
+            ).join('');
+            dom.results.innerHTML = skeletonHtml;
+            dom.pagination.style.display = 'none';
+            dom.statsCount.textContent = '…';
         }
 
         /**
@@ -1345,7 +1470,7 @@
                 <article class="card">
                     <div class="card-header">
                         <div class="card-title">
-                            <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">
+                            <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener" title="查看源码目录">
                                 ${escapeHtml(entry.full_name)}
                             </a>
                         </div>
@@ -1363,7 +1488,7 @@
                     ${topics ? `<div class="card-tags">${topics}</div>` : ''}
                     ${useCases ? `<div class="card-tags">${useCases}</div>` : ''}
                     <div class="card-actions">
-                        <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">GitHub</a>
+                        <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener" title="查看源码目录">${CODE_ICON_SVG}源码</a>
                         <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
                         <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
                     </div>
@@ -1754,7 +1879,7 @@
                 </div>
                 ${topics ? `<div class="graph-detail-tags">${topics}</div>` : ''}
                 <div class="graph-detail-actions">
-                    <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">GitHub</a>
+                    <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener" title="查看源码目录">${CODE_ICON_SVG}源码</a>
                     <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
                     <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
                 </div>
