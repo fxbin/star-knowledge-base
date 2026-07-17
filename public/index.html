@@ -617,6 +617,174 @@
         ::selection {
             background-color: rgba(13, 148, 136, 0.15);
         }
+
+        /* ========== 视图切换 Tab ========== */
+        .view-tabs {
+            display: flex;
+            gap: var(--space-1);
+            margin-bottom: var(--space-4);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .view-tab {
+            padding: var(--space-2) var(--space-4);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: -1px;
+        }
+
+        .view-tab:hover {
+            color: var(--color-text);
+        }
+
+        .view-tab.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        /* ========== 图谱视图 ========== */
+        .graph-view {
+            display: none;
+        }
+
+        .graph-view.active {
+            display: flex;
+            gap: var(--space-4);
+        }
+
+        .graph-container {
+            flex: 1;
+            position: relative;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-card);
+            height: 600px;
+            overflow: hidden;
+        }
+
+        #graphCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-legend {
+            position: absolute;
+            bottom: var(--space-3);
+            left: var(--space-3);
+            padding: var(--space-2) var(--space-3);
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .graph-legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .graph-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ========== 图谱详情面板 ========== */
+        .graph-detail {
+            width: 320px;
+            flex-shrink: 0;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-card);
+            padding: var(--space-4);
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .graph-detail-placeholder {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            text-align: center;
+            padding-top: var(--space-12);
+        }
+
+        .graph-detail-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .graph-detail-title a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .graph-detail-title a:hover {
+            text-decoration: underline;
+        }
+
+        .graph-detail-desc {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-3);
+            line-height: 1.5;
+        }
+
+        .graph-detail-meta {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-3);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+
+        .graph-detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1);
+            margin-bottom: var(--space-3);
+        }
+
+        .graph-detail-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .graph-detail-actions .action-button {
+            justify-content: center;
+        }
+
+        /* ========== 响应式：图谱视图 ========== */
+        @media (max-width: 900px) {
+            .graph-view.active {
+                flex-direction: column;
+            }
+
+            .graph-container {
+                height: 400px;
+            }
+
+            .graph-detail {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -692,10 +860,30 @@
             </div>
         </section>
 
-        <!-- 结果列表 -->
-        <div id="results" class="results"></div>
-        <div id="status" class="status"></div>
-        <div id="pagination" class="pagination" style="display: none;"></div>
+        <!-- 视图切换 Tab -->
+        <div class="view-tabs">
+            <button class="view-tab active" id="tabCard">卡片视图</button>
+            <button class="view-tab" id="tabGraph">图谱视图</button>
+        </div>
+
+        <!-- 卡片视图 -->
+        <div id="cardView" class="card-view">
+            <!-- 结果列表 -->
+            <div id="results" class="results"></div>
+            <div id="status" class="status"></div>
+            <div id="pagination" class="pagination" style="display: none;"></div>
+        </div>
+
+        <!-- 图谱视图 -->
+        <div id="graphView" class="graph-view">
+            <div class="graph-container">
+                <div id="graphCanvas"></div>
+                <div class="graph-legend" id="graphLegend"></div>
+            </div>
+            <div class="graph-detail" id="graphDetail">
+                <div class="graph-detail-placeholder">点击节点查看项目详情</div>
+            </div>
+        </div>
     </main>
 
     <!-- 页脚 -->
@@ -705,6 +893,8 @@
             · <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> agent 可接入</p>
     </footer>
 
+    <!-- Cytoscape.js 图谱可视化库（CDN 引入，零构建） -->
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
     <script>
         /**
          * Star Knowledge Base 前端搜索逻辑
@@ -724,6 +914,22 @@
         const HIGH_SCORE_THRESHOLD = 4;
         const LOW_SCORE_THRESHOLD = 2;
 
+        // 图谱相关常量
+        const GRAPH_NODE_THRESHOLD = 200;
+        const TOPIC_MIN_PROJECTS = 1;
+        const TOPIC_LABEL_MAX_LEN = 12;
+        const PROJECT_LABEL_MAX_LEN = 10;
+        const LANGUAGE_COLORS = {
+            Python: '#3776ab',
+            JavaScript: '#f7df1e',
+            TypeScript: '#3178c6',
+            Go: '#00add8',
+            Java: '#ed8b00',
+            Rust: '#dea584',
+            Other: '#a8a29e',
+        };
+        const DEFAULT_LANGUAGE_COLOR = '#a8a29e';
+
         // 全局状态
         const state = {
             allEntries: [],
@@ -731,6 +937,9 @@
             currentPage: 1,
             languages: new Set(),
             isLoading: false,
+            currentView: 'card',
+            graphInstance: null,
+            graphRendered: false,
         };
 
         // DOM 引用
@@ -748,6 +957,13 @@
             totalCount: document.getElementById('totalCount'),
             langCount: document.getElementById('langCount'),
             updateTime: document.getElementById('updateTime'),
+            tabCard: document.getElementById('tabCard'),
+            tabGraph: document.getElementById('tabGraph'),
+            cardView: document.getElementById('cardView'),
+            graphView: document.getElementById('graphView'),
+            graphCanvas: document.getElementById('graphCanvas'),
+            graphLegend: document.getElementById('graphLegend'),
+            graphDetail: document.getElementById('graphDetail'),
         };
 
         /**
@@ -875,6 +1091,9 @@
             state.filteredEntries = filtered;
             state.currentPage = 1;
             renderResults();
+            if (state.currentView === 'graph') {
+                renderGraph();
+            }
         }
 
         /**
@@ -1022,8 +1241,378 @@
             }
         }
 
+        /**
+         * 获取语言对应的颜色
+         * @param {string} language - 语言名称
+         * @returns {string} 十六进制颜色值
+         */
+        function getLanguageColor(language) {
+            if (!language) return DEFAULT_LANGUAGE_COLOR;
+            return LANGUAGE_COLORS[language] || DEFAULT_LANGUAGE_COLOR;
+        }
+
+        /**
+         * 截断文本到指定长度，超出部分用省略号替代
+         * @param {string} text - 原始文本
+         * @param {number} maxLen - 最大长度
+         * @returns {string} 截断后的文本
+         */
+        function truncateText(text, maxLen) {
+            if (!text || text.length <= maxLen) return text || '';
+            return text.substring(0, maxLen) + '…';
+        }
+
+        /**
+         * 从过滤后的项目列表构建图谱数据（二部图：topic 节点 + 项目节点）
+         *
+         * 聚类规则:
+         *   - 有 topics 的项目：每个 topic 作为聚类中心
+         *   - 无 topics 但有 language 的项目：language 作为聚类中心
+         *   - 都无的项目：归入"其他"聚类
+         *
+         * @returns {{nodes: Array, edges: Array}} 图谱节点和边
+         */
+        function buildGraphData() {
+            const entries = state.filteredEntries;
+            const topicMap = new Map();
+            const projectNodes = [];
+            const edges = [];
+
+            entries.forEach((entry, index) => {
+                const projectId = `p${index}`;
+                const projectLabel = truncateText(
+                    (entry.full_name || '').split('/').pop() || entry.full_name || '',
+                    PROJECT_LABEL_MAX_LEN
+                );
+                projectNodes.push({
+                    data: {
+                        id: projectId,
+                        label: projectLabel,
+                        type: 'project',
+                        entry: entry,
+                        color: getLanguageColor(entry.language),
+                        size: 20,
+                    }
+                });
+
+                const clusters = getProjectClusters(entry);
+                clusters.forEach(clusterName => {
+                    const topicId = `t_${clusterName}`;
+                    if (!topicMap.has(topicId)) {
+                        topicMap.set(topicId, {
+                            data: {
+                                id: topicId,
+                                label: truncateText(clusterName, TOPIC_LABEL_MAX_LEN),
+                                type: 'topic',
+                                topicName: clusterName,
+                                projectCount: 0,
+                                color: '#1c1917',
+                                size: 30,
+                            }
+                        });
+                    }
+                    topicMap.get(topicId).data.projectCount++;
+                    edges.push({
+                        data: {
+                            id: `e_${projectId}_${topicId}`,
+                            source: topicId,
+                            target: projectId,
+                        }
+                    });
+                });
+            });
+
+            const topicNodes = Array.from(topicMap.values()).map(node => {
+                node.data.size = 25 + Math.min(node.data.projectCount * 3, 30);
+                return node;
+            });
+
+            return {
+                nodes: [...topicNodes, ...projectNodes],
+                edges: edges,
+            };
+        }
+
+        /**
+         * 获取项目的聚类标签列表（topics 优先，language 兜底，都无则"其他"）
+         * @param {Object} entry - 项目数据
+         * @returns {string[]} 聚类标签列表
+         */
+        function getProjectClusters(entry) {
+            const topics = entry.topics || [];
+            if (topics.length > 0) {
+                return topics.slice(0, 3);
+            }
+            if (entry.language) {
+                return [entry.language];
+            }
+            return ['其他'];
+        }
+
+        /**
+         * 渲染图谱视图（Cytoscape.js 力导向二部图）
+         *
+         * 性能策略:
+         *   - 节点数超过 GRAPH_NODE_THRESHOLD 时关闭布局动画
+         *   - 使用 cose 布局算法（力导向）
+         *   - canvas 渲染，避免 SVG DOM 性能瓶颈
+         */
+        function renderGraph() {
+            if (state.filteredEntries.length === 0) {
+                dom.graphCanvas.innerHTML = '';
+                renderGraphDetail(null);
+                renderGraphLegend([]);
+                return;
+            }
+
+            const graphData = buildGraphData();
+            const animate = graphData.nodes.length <= GRAPH_NODE_THRESHOLD;
+
+            if (state.graphInstance) {
+                state.graphInstance.destroy();
+                state.graphInstance = null;
+            }
+
+            state.graphInstance = cytoscape({
+                container: dom.graphCanvas,
+                elements: [...graphData.nodes, ...graphData.edges],
+                style: [
+                    {
+                        selector: 'node[type = "topic"]',
+                        style: {
+                            'background-color': '#1c1917',
+                            'label': 'data(label)',
+                            'color': '#1c1917',
+                            'font-size': '11px',
+                            'font-weight': '600',
+                            'text-valign': 'bottom',
+                            'text-margin-y': 6,
+                            'width': 'data(size)',
+                            'height': 'data(size)',
+                            'border-width': 2,
+                            'border-color': '#d4d4d2',
+                        }
+                    },
+                    {
+                        selector: 'node[type = "project"]',
+                        style: {
+                            'background-color': 'data(color)',
+                            'label': 'data(label)',
+                            'color': '#57534e',
+                            'font-size': '9px',
+                            'text-valign': 'bottom',
+                            'text-margin-y': 4,
+                            'width': 'data(size)',
+                            'height': 'data(size)',
+                            'border-width': 1,
+                            'border-color': '#e5e5e4',
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 1,
+                            'line-color': '#d4d4d2',
+                            'opacity': 0.3,
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'none',
+                        }
+                    },
+                    {
+                        selector: 'node[type = "topic"]:selected',
+                        style: {
+                            'border-color': '#0d9488',
+                            'border-width': 3,
+                        }
+                    },
+                    {
+                        selector: 'node[type = "project"]:selected',
+                        style: {
+                            'border-color': '#0d9488',
+                            'border-width': 3,
+                        }
+                    },
+                    {
+                        selector: '.faded',
+                        style: {
+                            'opacity': 0.15,
+                        }
+                    },
+                    {
+                        selector: '.highlighted',
+                        style: {
+                            'opacity': 1,
+                            'border-color': '#0d9488',
+                            'border-width': 2,
+                        }
+                    },
+                ],
+                layout: {
+                    name: 'cose',
+                    animate: animate,
+                    animationDuration: 500,
+                    nodeRepulsion: 8000,
+                    idealEdgeLength: 60,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25,
+                    numIter: 1500,
+                    fit: true,
+                    padding: 30,
+                    randomize: true,
+                },
+                wheelSensitivity: 0.2,
+            });
+
+            bindGraphEvents();
+            renderGraphLegend(getTopLanguages());
+            state.graphRendered = true;
+        }
+
+        /**
+         * 绑定图谱交互事件
+         *
+         * 交互:
+         *   - 悬停项目节点：高亮该节点 + 关联边 + 相邻 topic，其余变淡
+         *   - 点击项目节点：右侧详情面板显示项目信息
+         *   - 点击 topic 节点：过滤为该 topic 下的项目
+         *   - 双击空白：重置视图
+         */
+        function bindGraphEvents() {
+            state.graphInstance.on('mouseover', 'node[type = "project"]', (event) => {
+                const node = event.target;
+                const connected = node.connectedEdges().connectedNodes().union(node.connectedEdges());
+                state.graphInstance.elements().addClass('faded');
+                connected.removeClass('faded').addClass('highlighted');
+                node.removeClass('faded');
+            });
+
+            state.graphInstance.on('mouseout', 'node[type = "project"]', () => {
+                state.graphInstance.elements().removeClass('faded highlighted');
+            });
+
+            state.graphInstance.on('tap', 'node[type = "project"]', (event) => {
+                const node = event.target;
+                const entry = node.data('entry');
+                renderGraphDetail(entry);
+            });
+
+            state.graphInstance.on('tap', 'node[type = "topic"]', (event) => {
+                const node = event.target;
+                const topicName = node.data('topicName');
+                dom.searchInput.value = topicName;
+                applyFilters();
+            });
+
+            state.graphInstance.on('dblclick', (event) => {
+                if (event.target === state.graphInstance) {
+                    state.graphInstance.animate({ fit: { eles: state.graphInstance.elements(), padding: 30 } });
+                }
+            });
+        }
+
+        /**
+         * 获取过滤结果中出现频率最高的前 6 种语言
+         * @returns {Array<{language: string, color: string}>} 语言和颜色列表
+         */
+        function getTopLanguages() {
+            const langCount = new Map();
+            state.filteredEntries.forEach(entry => {
+                const lang = entry.language || 'Other';
+                langCount.set(lang, (langCount.get(lang) || 0) + 1);
+            });
+            return Array.from(langCount.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6)
+                .map(([lang]) => ({
+                    language: lang,
+                    color: getLanguageColor(lang),
+                }));
+        }
+
+        /**
+         * 渲染图谱图例（语言颜色说明）
+         * @param {Array<{language: string, color: string}>} legends - 图例数据
+         */
+        function renderGraphLegend(legends) {
+            if (legends.length === 0) {
+                dom.graphLegend.innerHTML = '';
+                dom.graphLegend.style.display = 'none';
+                return;
+            }
+            dom.graphLegend.style.display = 'flex';
+            dom.graphLegend.innerHTML = legends.map(item =>
+                `<div class="graph-legend-item">
+                    <span class="graph-legend-dot" style="background-color: ${item.color}"></span>
+                    <span>${escapeHtml(item.language)}</span>
+                </div>`
+            ).join('');
+        }
+
+        /**
+         * 在右侧详情面板渲染项目详情
+         * @param {Object|null} entry - 项目数据，null 时显示占位提示
+         */
+        function renderGraphDetail(entry) {
+            if (!entry) {
+                dom.graphDetail.innerHTML = '<div class="graph-detail-placeholder">点击节点查看项目详情</div>';
+                return;
+            }
+
+            const scoreClass = entry.quality_score >= HIGH_SCORE_THRESHOLD ? 'high'
+                : entry.quality_score >= LOW_SCORE_THRESHOLD ? 'mid'
+                : 'low';
+
+            const topics = (entry.topics || [])
+                .slice(0, 8)
+                .map(topic => `<span class="tag">${escapeHtml(topic)}</span>`)
+                .join('');
+
+            dom.graphDetail.innerHTML = `
+                <div class="graph-detail-title">
+                    <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">
+                        ${escapeHtml(entry.full_name)}
+                    </a>
+                </div>
+                <p class="graph-detail-desc">${escapeHtml(entry.description || '（无描述）')}</p>
+                <div class="graph-detail-meta">
+                    ${entry.language ? `<span>${escapeHtml(entry.language)}</span>` : ''}
+                    <span>★ ${entry.stargazers_count || 0}</span>
+                    <span>⑂ ${entry.forks_count || 0}</span>
+                    <span class="card-score ${scoreClass}" style="font-size: 0.7rem;">质量 ${entry.quality_score}/5</span>
+                </div>
+                ${topics ? `<div class="graph-detail-tags">${topics}</div>` : ''}
+                <div class="graph-detail-actions">
+                    <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">GitHub</a>
+                    <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
+                    <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
+                </div>
+            `;
+        }
+
+        /**
+         * 切换视图（卡片 / 图谱）
+         * @param {string} view - 视图名称：'card' 或 'graph'
+         */
+        function switchView(view) {
+            state.currentView = view;
+            if (view === 'card') {
+                dom.tabCard.classList.add('active');
+                dom.tabGraph.classList.remove('active');
+                dom.cardView.style.display = '';
+                dom.graphView.classList.remove('active');
+            } else {
+                dom.tabGraph.classList.add('active');
+                dom.tabCard.classList.remove('active');
+                dom.cardView.style.display = 'none';
+                dom.graphView.classList.add('active');
+                renderGraph();
+            }
+        }
+
         // 事件绑定
         dom.searchButton.addEventListener('click', applyFilters);
+        dom.tabCard.addEventListener('click', () => switchView('card'));
+        dom.tabGraph.addEventListener('click', () => switchView('graph'));
         dom.resetButton.addEventListener('click', () => {
             dom.searchInput.value = '';
             dom.languageFilter.value = '';
