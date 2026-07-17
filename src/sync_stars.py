@@ -75,6 +75,16 @@ ENV_GITHUB_USERNAME = "GITHUB_USERNAME"
 ENV_FORCE_REFRESH = "FORCE_REFRESH"
 
 SCHEMA_VERSION = "1.0"
+HEURISTIC_GENERATOR_NAME = "heuristic"
+
+# 启发式质量评分阈值（按 star 数分级）
+HEURISTIC_SCORE_TIER_5 = 10000
+HEURISTIC_SCORE_TIER_4 = 1000
+HEURISTIC_SCORE_TIER_3 = 100
+HEURISTIC_SCORE_TIER_2 = 10
+HEURISTIC_SUMMARY_MAX_CHARS = 80
+HEURISTIC_USE_CASE_MAX_COUNT = 3
+HEURISTIC_README_SUMMARY_CHARS = 80
 
 
 @dataclass
@@ -336,20 +346,30 @@ class GitHubStarredClient:
 
 
 class MetadataGenerator:
-    """基于 LLM 的元数据生成器
+    """元数据生成器
 
-    为每个仓库生成摘要、场景标签、质量评分。
+    双模式工作:
+        - LLM 模式（推荐）: 配置了 LLM_API_KEY 时，调用 LLM 生成高质量摘要和场景标签
+        - 启发式模式（零摩擦）: 未配置 LLM 时，用 GitHub API 原始数据启发式生成
+
+    启发式规则:
+        - summary: 优先 description，缺失时取 README 第一段，再缺失用 full_name
+        - use_cases: topics 前 3 个 + language
+        - quality_score: 按 star 数分级 1-5
     """
 
-    def __init__(self, llm: LLMClient):
+    def __init__(self, llm: LLMClient | None):
         self.llm = llm
-        self.model_name = llm.config.model
+        self.model_name = llm.config.model if llm else HEURISTIC_GENERATOR_NAME
 
     def generate(self, repo: StarredRepo, readme_excerpt: str) -> RepoMetadata:
         """为单个仓库生成元数据
 
-        异常时返回兜底元数据，避免单点失败影响整体同步。
+        LLM 模式失败时自动降级到启发式，保证单点失败不影响整体同步。
         """
+        if self.llm is None:
+            return self._heuristic_metadata(repo, readme_excerpt)
+
         try:
             result = self.llm.generate_json(
                 system_prompt=self._system_prompt(),
@@ -365,8 +385,8 @@ class MetadataGenerator:
                 generator_model=self.model_name,
             )
         except (LLMError, ValueError) as exc:
-            logger.warning("LLM 元数据生成失败 %s: %s，使用兜底数据", repo.full_name, exc)
-            return self._fallback_metadata(repo)
+            logger.warning("LLM 元数据生成失败 %s: %s，降级到启发式", repo.full_name, exc)
+            return self._heuristic_metadata(repo, readme_excerpt)
 
     @staticmethod
     def _system_prompt() -> str:
@@ -406,29 +426,65 @@ class MetadataGenerator:
         return max(1, min(5, score))
 
     @staticmethod
-    def _fallback_metadata(repo: StarredRepo) -> RepoMetadata:
-        """LLM 失败时的兜底元数据
+    def _heuristic_metadata(repo: StarredRepo, readme_excerpt: str) -> RepoMetadata:
+        """启发式生成元数据（零摩擦模式，无需 LLM）
 
-        使用 description 作为摘要，topics 作为场景标签，
-        根据 star 数粗略估算质量评分。
+        规则:
+            - summary: 优先 description；缺失时取 README 第一段非标题文本；
+              再缺失用 full_name
+            - use_cases: topics 前 3 个 + language（去重）
+            - quality_score: 按 star 数分级 1-5
         """
-        if repo.stargazers_count >= 10000:
-            score = 5
-        elif repo.stargazers_count >= 1000:
-            score = 4
-        elif repo.stargazers_count >= 100:
-            score = 3
-        elif repo.stargazers_count >= 10:
-            score = 2
-        else:
-            score = 1
+        summary = _extract_heuristic_summary(repo, readme_excerpt)
+        use_cases = _extract_heuristic_use_cases(repo)
+        score = _compute_heuristic_quality_score(repo.stargazers_count)
         return RepoMetadata(
-            summary=(repo.description or repo.full_name)[:80],
-            use_cases=repo.topics[:3] if repo.topics else [],
+            summary=summary,
+            use_cases=use_cases,
             quality_score=score,
             generated_at=datetime.now(timezone.utc).isoformat(),
-            generator_model="fallback",
+            generator_model=HEURISTIC_GENERATOR_NAME,
         )
+
+
+def _extract_heuristic_summary(repo: StarredRepo, readme_excerpt: str) -> str:
+    """从 description 或 README 提取启发式摘要"""
+    if repo.description and repo.description.strip():
+        return repo.description.strip()[:HEURISTIC_SUMMARY_MAX_CHARS]
+
+    if readme_excerpt:
+        for line in readme_excerpt.splitlines():
+            text = line.strip().lstrip("#").strip()
+            if text and not text.startswith(("!", "[", "-", "*")):
+                return text[:HEURISTIC_README_SUMMARY_CHARS]
+
+    return repo.full_name[:HEURISTIC_SUMMARY_MAX_CHARS]
+
+
+def _extract_heuristic_use_cases(repo: StarredRepo) -> list[str]:
+    """从 topics 和 language 提取启发式场景标签"""
+    use_cases: list[str] = []
+    for topic in repo.topics:
+        if topic not in use_cases:
+            use_cases.append(topic)
+        if len(use_cases) >= HEURISTIC_USE_CASE_MAX_COUNT:
+            break
+    if repo.language and repo.language not in use_cases:
+        use_cases.append(repo.language)
+    return use_cases[:HEURISTIC_USE_CASE_MAX_COUNT]
+
+
+def _compute_heuristic_quality_score(stargazers_count: int) -> int:
+    """按 star 数分级计算启发式质量评分 1-5"""
+    if stargazers_count >= HEURISTIC_SCORE_TIER_5:
+        return 5
+    if stargazers_count >= HEURISTIC_SCORE_TIER_4:
+        return 4
+    if stargazers_count >= HEURISTIC_SCORE_TIER_3:
+        return 3
+    if stargazers_count >= HEURISTIC_SCORE_TIER_2:
+        return 2
+    return 1
 
 
 def build_entry(repo: StarredRepo, metadata: RepoMetadata) -> StarKnowledgeEntry:
@@ -521,6 +577,10 @@ def main() -> int:
     except LLMError as exc:
         logger.error("LLM 客户端初始化失败: %s", exc)
         return 1
+    if llm is None:
+        logger.info("LLM 未配置，使用启发式模式生成元数据（零摩擦模式）")
+    else:
+        logger.info("LLM 已配置，使用 %s 增强元数据生成", llm.config.model)
     generator = MetadataGenerator(llm)
 
     entries: list[StarKnowledgeEntry] = []

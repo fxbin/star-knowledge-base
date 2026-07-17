@@ -172,38 +172,48 @@ class StarDataLoader:
 
 
 class SemanticSearcher:
-    """基于 LLM 的语义搜索器
+    """语义搜索器
 
-    不预计算 embedding，每次查询时将候选条目交给 LLM 做语义匹配。
-    优势: 零维护成本，随模型升级自动变好。
+    双模式工作:
+        - LLM 模式（推荐）: 关键词预筛 + LLM 实时精排，无需向量数据库
+        - 关键词模式（零摩擦）: 未配置 LLM 时，纯关键词匹配 + 相关度评分排序
+
+    LLM 模式优势: 语义理解强，随模型升级自动变好，零维护成本。
+    关键词模式优势: 零依赖，clone 即可跑，适合未配 LLM API key 的用户。
     """
 
-    def __init__(self, llm: LLMClient):
+    def __init__(self, llm: LLMClient | None):
         self.llm = llm
 
     def search(self, query: str, entries: list[dict], limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
-        """执行语义搜索
+        """执行搜索
 
         步骤:
-            1. 关键词预筛: 用 topics/description/name 做粗筛，缩小 LLM 输入
-            2. LLM 精排: 让 LLM 对候选打分并返回排序后的 full_name 列表
-            3. 结果映射: 把 LLM 返回的 full_name 映射回完整条目
+            1. 关键词预筛: 用 topics/description/name/use_cases 做粗筛并打分
+            2. 若配置了 LLM 且候选数 > 0: LLM 精排
+            3. 若未配置 LLM: 直接按关键词相关度排序返回
         """
         if not entries:
             return []
         if not query.strip():
             return entries[:limit]
 
-        candidates = self._keyword_prefilter(query, entries)
-        if not candidates:
-            candidates = entries
+        scored_candidates = self._keyword_score(query, entries)
+        if not scored_candidates:
+            return entries[:limit]
 
+        if self.llm is None:
+            scored_candidates.sort(key=lambda pair: pair[0], reverse=True)
+            return [entry for _, entry in scored_candidates[:limit]]
+
+        candidates = [entry for _, entry in scored_candidates]
         if len(candidates) > MAX_CANDIDATES_FOR_LLM:
             candidates = candidates[:MAX_CANDIDATES_FOR_LLM]
 
         ranked_full_names = self._llm_rank(query, candidates)
         if not ranked_full_names:
-            return candidates[:limit]
+            scored_candidates.sort(key=lambda pair: pair[0], reverse=True)
+            return [entry for _, entry in scored_candidates[:limit]]
 
         index = {entry["full_name"]: entry for entry in candidates}
         results: list[dict] = []
@@ -216,36 +226,42 @@ class SemanticSearcher:
         return results
 
     @staticmethod
-    def _keyword_prefilter(query: str, entries: list[dict]) -> list[dict]:
-        """关键词预筛
+    def _keyword_score(query: str, entries: list[dict]) -> list[tuple[int, dict]]:
+        """关键词匹配并评分
 
-        把 query 拆成 token，命中 name/topics/language/description 任意一个的条目保留。
-        作用是降低 LLM 输入规模，节省 token。
+        把 query 拆成 token，在 name/full_name/description/language/topics/
+        use_cases/summary 中匹配，命中字段权重不同:
+            - name / full_name: 3 分
+            - topics / use_cases: 2 分
+            - description / summary / language: 1 分
+        返回 (score, entry) 列表，score > 0 的才保留。
         """
         tokens = [token.lower() for token in query.split() if token.strip()]
         if not tokens:
-            return entries
+            return [(1, entry) for entry in entries]
 
         scored: list[tuple[int, dict]] = []
         for entry in entries:
-            haystack_parts = [
-                entry.get("name", ""),
-                entry.get("full_name", ""),
-                entry.get("description", "") or "",
-                entry.get("language", "") or "",
-                " ".join(entry.get("topics", []) or []),
-                " ".join(entry.get("use_cases", []) or []),
-                entry.get("summary", "") or "",
-            ]
-            haystack = " ".join(haystack_parts).lower()
-            score = sum(1 for token in tokens if token in haystack)
+            name = (entry.get("name", "") or "").lower()
+            full_name = (entry.get("full_name", "") or "").lower()
+            description = (entry.get("description", "") or "").lower()
+            language = (entry.get("language", "") or "").lower()
+            topics = " ".join(entry.get("topics", []) or []).lower()
+            use_cases = " ".join(entry.get("use_cases", []) or []).lower()
+            summary = (entry.get("summary", "") or "").lower()
+
+            score = 0
+            for token in tokens:
+                if token in name or token in full_name:
+                    score += 3
+                if token in topics or token in use_cases:
+                    score += 2
+                if token in description or token in summary or token in language:
+                    score += 1
             if score > 0:
                 scored.append((score, entry))
 
-        if not scored:
-            return []
-        scored.sort(key=lambda pair: pair[0], reverse=True)
-        return [entry for _, entry in scored]
+        return scored
 
     def _llm_rank(self, query: str, candidates: list[dict]) -> list[str]:
         """调用 LLM 对候选打分排序
@@ -410,7 +426,8 @@ def _simplify_for_search(entry: dict) -> dict:
 def _load_env_or_exit() -> tuple[StarDataLoader, SemanticSearcher]:
     """从环境变量构建 data_loader 和 searcher
 
-    缺失必填项时打印清晰错误并退出。
+    STAR_DATA_URL 或 STAR_DATA_LOCAL 必填其一，缺失时退出。
+    LLM 配置可选，未配置时 searcher 降级为关键词匹配模式。
     """
     local_path = os.getenv(ENV_STAR_DATA_LOCAL, "").strip() or None
     remote_url = os.getenv(ENV_STAR_DATA_URL, "").strip() or None
@@ -432,11 +449,11 @@ def _load_env_or_exit() -> tuple[StarDataLoader, SemanticSearcher]:
         refresh_seconds=refresh_seconds,
     )
 
-    try:
-        llm = build_default_client()
-    except LLMError as exc:
-        logger.error("LLM 客户端初始化失败: %s", exc)
-        sys.exit(1)
+    llm = build_default_client()
+    if llm is None:
+        logger.info("LLM 未配置，search_starred 将使用关键词匹配模式（零摩擦模式）")
+    else:
+        logger.info("LLM 已配置: %s，search_starred 将使用 LLM 语义精排", llm.config.model)
 
     searcher = SemanticSearcher(llm)
     return data_loader, searcher

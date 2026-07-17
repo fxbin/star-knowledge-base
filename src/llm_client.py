@@ -277,9 +277,17 @@ class LLMClient:
         return response.content[0].text
 
 
-def build_default_client() -> LLMClient:
+def build_default_client() -> LLMClient | None:
     """便捷工厂：从环境变量构建默认 LLM 客户端
 
     供 sync_stars.py 和 mcp_server.py 共用，避免重复样板代码。
+
+    返回:
+        LLMClient 实例；若 LLM_API_KEY 未配置则返回 None，
+        调用方应据此降级到启发式逻辑（零摩擦设计）。
     """
-    return LLMClient(LLMConfig.from_env())
+    try:
+        return LLMClient(LLMConfig.from_env())
+    except LLMError as exc:
+        logger.info("LLM 未配置或配置不完整，将降级到启发式模式: %s", exc)
+        return None
