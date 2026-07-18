@@ -290,6 +290,16 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* 搜索区提示语：说明过滤范围，避免用户在图谱视图下疑惑搜索区是否生效 */
+        .filter-hint {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
         /* ========== 结果列表 ========== */
         .results {
             display: flex;
@@ -919,36 +929,58 @@
             gap: var(--space-3);
             font-size: 0.8125rem;
             color: var(--color-text-secondary);
+            padding: var(--space-2) var(--space-3);
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
         }
 
         .graph-info {
             display: flex;
             align-items: center;
             gap: var(--space-2);
+            color: var(--color-text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 统计数字：稍加突出，便于快速定位 */
+        .graph-info strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        /* toggle 按钮组：用容器边框形成视觉分组，与左侧信息块拉开 */
+        .graph-toggle-group {
+            display: inline-flex;
+            gap: var(--space-1);
+            padding: var(--space-1);
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
         }
 
         .graph-toggle-btn {
             padding: 5px 12px;
             font-size: 0.8125rem;
             font-family: inherit;
-            border: 1px solid var(--color-border);
+            border: 1px solid transparent;
             border-radius: var(--radius-sm);
-            background-color: var(--color-card);
+            background-color: transparent;
             color: var(--color-text-secondary);
             cursor: pointer;
             transition: all var(--transition);
         }
 
         .graph-toggle-btn:hover {
-            background-color: var(--color-bg);
-            border-color: var(--color-border-strong);
+            background-color: var(--color-card);
             color: var(--color-text);
         }
 
         .graph-toggle-btn.active {
-            background-color: var(--color-accent-subtle);
-            border-color: var(--color-accent);
+            background-color: var(--color-card);
+            border-color: var(--color-border);
             color: var(--color-accent);
+            font-weight: 500;
         }
 
         .graph-content {
@@ -1236,6 +1268,10 @@
                     <span id="pageInfo"></span>
                 </div>
             </div>
+            <div class="filter-hint">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                搜索与筛选对「卡片视图」和「图谱视图」均生效
+            </div>
         </section>
 
         <!-- 视图切换 Tab -->
@@ -1256,7 +1292,7 @@
         <div id="graphView" class="graph-view">
             <div class="graph-toolbar">
                 <div class="graph-info" id="graphInfo">加载中...</div>
-                <div>
+                <div class="graph-toggle-group">
                     <button class="graph-toggle-btn active" id="graphToggleQuality">仅高质量</button>
                     <button class="graph-toggle-btn" id="graphToggleAll">显示全部</button>
                 </div>
@@ -1943,7 +1979,7 @@
             const graphData = buildGraphData();
             const animate = graphData.nodes.length <= GRAPH_NODE_THRESHOLD;
 
-            dom.graphInfo.textContent = `显示 ${graphData.displayed} / ${graphData.total} 个项目 · ${graphData.nodes.length} 个节点`;
+            dom.graphInfo.innerHTML = `显示 <strong>${graphData.displayed}</strong> / ${graphData.total} 个项目 · <strong>${graphData.nodes.length}</strong> 个节点`;
 
             if (state.graphInstance) {
                 state.graphInstance.destroy();
