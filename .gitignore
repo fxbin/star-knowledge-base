@@ -63,3 +63,4 @@ public/data.json
 # Playwright 验证产物
 .playwright-cli/
 output/
+docs/decisions
