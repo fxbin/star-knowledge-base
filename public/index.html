@@ -1233,6 +1233,274 @@
             background-color: rgba(13, 148, 136, 0.15);
         }
 
+        /* ========== AI 摘要按钮 ========== */
+        .ai-summary-btn {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+        }
+
+        .ai-summary-btn:hover {
+            background-color: var(--color-interactive-bg);
+            color: var(--color-interactive);
+            border-color: var(--color-border-strong);
+        }
+
+        .ai-summary-btn:disabled {
+            opacity: 0.5;
+            cursor: wait;
+        }
+
+        .ai-summary-result {
+            font-size: 0.8125rem;
+            margin-top: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background-color: var(--color-summary-bg);
+            border-left: 3px solid var(--color-accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            line-height: 1.6;
+            color: var(--color-text);
+        }
+
+        .ai-summary-loading {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .ai-summary-loading::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border: 1.5px solid var(--color-meter-track);
+            border-top-color: var(--color-accent);
+            border-radius: 50%;
+            animation: ai-spin 600ms linear infinite;
+        }
+
+        @keyframes ai-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-summary-fallback {
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            margin-top: var(--space-1);
+        }
+
+        /* ========== 语音输入按钮 ========== */
+        .voice-btn {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: color var(--transition), background-color var(--transition);
+        }
+
+        .voice-btn:hover {
+            color: var(--color-text);
+            background-color: var(--color-interactive-bg);
+        }
+
+        .voice-btn.listening {
+            color: var(--color-danger);
+            animation: voice-pulse 800ms ease-in-out infinite alternate;
+        }
+
+        @keyframes voice-pulse {
+            to { opacity: 0.5; }
+        }
+
+        /* ========== 上下文首屏横幅 ========== */
+        .whats-new {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-5);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+        }
+
+        .whats-new-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: var(--color-accent);
+            margin-top: 1px;
+        }
+
+        .whats-new-body {
+            flex: 1;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            color: var(--color-text-secondary);
+        }
+
+        .whats-new-title {
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 2px;
+        }
+
+        .whats-new-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2) var(--space-4);
+        }
+
+        .whats-new-item {
+            display: inline-flex;
+            align-items: baseline;
+            gap: var(--space-1);
+        }
+
+        .whats-new-item-value {
+            font-weight: 600;
+            color: var(--color-text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .whats-new-dismiss {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            border-radius: var(--radius-xs);
+            transition: color var(--transition), background-color var(--transition);
+        }
+
+        .whats-new-dismiss:hover {
+            color: var(--color-text);
+            background-color: var(--color-interactive-bg);
+        }
+
+        /* ========== 视图切换 ========== */
+        .view-toggle {
+            display: inline-flex;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .view-toggle-btn {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: none;
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        .view-toggle-btn:hover {
+            color: var(--color-text);
+        }
+
+        .view-toggle-btn.active {
+            background-color: var(--color-interactive-bg);
+            color: var(--color-interactive);
+            font-weight: 600;
+        }
+
+        /* ========== 语义缩放画布 ========== */
+        .zoom-container {
+            position: relative;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background-color: var(--color-card);
+            overflow: hidden;
+            display: none;
+        }
+
+        .zoom-container.active {
+            display: block;
+        }
+
+        .zoom-canvas {
+            display: block;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .zoom-canvas:active {
+            cursor: grabbing;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: var(--space-3);
+            right: var(--space-3);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .zoom-ctrl-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+        }
+
+        .zoom-ctrl-btn:hover {
+            background-color: var(--color-interactive-bg);
+            color: var(--color-interactive);
+            border-color: var(--color-border-strong);
+        }
+
+        .zoom-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background-color: var(--color-text);
+            color: var(--color-card);
+            font-size: 0.6875rem;
+            padding: 3px 8px;
+            border-radius: var(--radius-xs);
+            white-space: nowrap;
+            display: none;
+            z-index: 10;
+        }
+
         /* ========== 动效降级：prefers-reduced-motion 一律瞬时切换 ========== */
         @media (prefers-reduced-motion: reduce) {
             html {
@@ -1241,7 +1509,9 @@
 
             .palette,
             .detail-inner,
-            .skeleton-row td {
+            .skeleton-row td,
+            .ai-summary-loading::before,
+            .voice-btn.listening {
                 animation: none;
             }
 
@@ -1330,6 +1600,15 @@
 
     <!-- 主内容区 -->
     <main class="main">
+        <!-- 上下文首屏：自上次访问以来的变化 -->
+        <div class="whats-new" id="whatsNew" style="display:none;">
+            <svg class="whats-new-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+            <div class="whats-new-body" id="whatsNewBody"></div>
+            <button class="whats-new-dismiss" id="whatsNewDismiss" aria-label="关闭">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+            </button>
+        </div>
+
         <!-- 搜索区 -->
         <section class="search-section">
             <div class="search-box">
@@ -1345,6 +1624,9 @@
                         autocomplete="off"
                     >
                     <span class="search-kbd" aria-hidden="true">/</span>
+                    <button class="voice-btn" id="voiceBtn" title="语音搜索" aria-label="语音搜索" style="display:none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                    </button>
                 </div>
                 <button id="resetButton" class="search-button">重置</button>
             </div>
@@ -1361,14 +1643,29 @@
                     <span>筛选 <span class="stats-count" id="statsCount">0</span> 个</span>
                     <span id="pageInfo"></span>
                 </div>
+                <div class="view-toggle" role="group" aria-label="视图切换">
+                    <button class="view-toggle-btn active" id="viewTableBtn" title="表格视图">表格</button>
+                    <button class="view-toggle-btn" id="viewZoomBtn" title="语义缩放视图">星图</button>
+                </div>
             </div>
             <div class="filter-hint">
-                快捷键：/ 聚焦搜索，←/→ 翻页，j/k 选择行，Enter 展开详情，⌘K 命令面板
+                快捷键：/ 聚焦搜索，←/→ 翻页，j/k 选择行，Enter 展开详情，⌘K 命令面板，点击星图查看项目聚类
             </div>
         </section>
 
         <!-- Topic 分面导航 -->
         <nav class="facet-nav" id="facetNav" aria-label="按 topic 筛选"></nav>
+
+        <!-- 语义缩放画布（星图视图） -->
+        <div class="zoom-container" id="zoomContainer">
+            <canvas class="zoom-canvas" id="zoomCanvas"></canvas>
+            <div class="zoom-tooltip" id="zoomTooltip"></div>
+            <div class="zoom-controls">
+                <button class="zoom-ctrl-btn" id="zoomInBtn" title="放大">+</button>
+                <button class="zoom-ctrl-btn" id="zoomOutBtn" title="缩小">−</button>
+                <button class="zoom-ctrl-btn" id="zoomResetBtn" title="重置" style="font-size:0.75rem;">↻</button>
+            </div>
+        </div>
 
         <!-- 高密度表格视图 -->
         <div class="table-wrap" id="tableWrap">
@@ -1469,6 +1766,24 @@
         // 是否偏好减弱动效：为 true 时 FLIP / 淡化 / 错峰点亮全部降级为瞬时切换
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+        // 访问快照 localStorage key：用于上下文首屏「自上次以来的变化」
+        const VISIT_SNAPSHOT_KEY = 'skb_visit_snapshot_v1';
+        const VISIT_SNAPSHOT_MAX_ENTRIES = 500;
+
+        // AI 摘要：浏览器内置 LanguageModel API 的系统提示词
+        const AI_SUMMARY_SYSTEM_PROMPT = '你是代码库摘要助手。用一句话（不超过 60 字）概括项目的核心功能和适用场景，语气客观、不夸大。';
+        const AI_SUMMARY_MAX_TOKENS = 120;
+
+        // 语义缩放：Canvas 渲染参数
+        const ZOOM_MIN_SCALE = 0.3;
+        const ZOOM_MAX_SCALE = 5;
+        const ZOOM_WHEEL_FACTOR = 0.0015;
+        const ZOOM_CLUSTER_RADIUS_BASE = 60;
+        const ZOOM_NODE_RADIUS = 4;
+        const ZOOM_NODE_RADIUS_HOVER = 7;
+        const ZOOM_LABEL_THRESHOLD = 1.2;
+        const ZOOM_DETAIL_THRESHOLD = 2.5;
+
         // ========== 全局状态 ==========
         const state = {
             allEntries: [],
@@ -1484,6 +1799,20 @@
             paletteOpen: false,
             paletteIndex: 0,
             paletteItems: [],
+            viewMode: 'table',
+            aiSession: null,
+            aiAvailability: null,
+            voiceRecognition: null,
+            voiceListening: false,
+            zoomScale: 1,
+            zoomOffsetX: 0,
+            zoomOffsetY: 0,
+            zoomNodes: [],
+            zoomClusters: [],
+            zoomHoveredNode: null,
+            zoomDragging: false,
+            zoomLastMouseX: 0,
+            zoomLastMouseY: 0,
         };
 
         // ========== DOM 引用 ==========
@@ -1507,6 +1836,18 @@
             paletteOverlay: document.getElementById('paletteOverlay'),
             paletteInput: document.getElementById('paletteInput'),
             paletteList: document.getElementById('paletteList'),
+            voiceBtn: document.getElementById('voiceBtn'),
+            whatsNew: document.getElementById('whatsNew'),
+            whatsNewBody: document.getElementById('whatsNewBody'),
+            whatsNewDismiss: document.getElementById('whatsNewDismiss'),
+            viewTableBtn: document.getElementById('viewTableBtn'),
+            viewZoomBtn: document.getElementById('viewZoomBtn'),
+            zoomContainer: document.getElementById('zoomContainer'),
+            zoomCanvas: document.getElementById('zoomCanvas'),
+            zoomTooltip: document.getElementById('zoomTooltip'),
+            zoomInBtn: document.getElementById('zoomInBtn'),
+            zoomOutBtn: document.getElementById('zoomOutBtn'),
+            zoomResetBtn: document.getElementById('zoomResetBtn'),
         };
 
         /**
@@ -1577,6 +1918,9 @@
             populateLanguageFilter();
             updateHeaderStats(data);
             renderFacets();
+            const changes = computeWhatsNew(state.allEntries);
+            if (changes) renderWhatsNew(changes);
+            saveVisitSnapshot(state.allEntries);
             applyFilters({ flip: false });
         }
 
@@ -1960,10 +2304,20 @@
                 ? `<div class="detail-summary"><div class="detail-summary-label">摘要</div>${escapeHtml(entry.summary)}</div>`
                 : '';
 
+            const aiButton = state.aiAvailability === 'available'
+                ? `<button class="ai-summary-btn" onclick="generateAISummary('${escapeHtml(entry.full_name)}', this)">` +
+                    `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"></path></svg>` +
+                    `本地 AI 深度分析` +
+                  `</button>`
+                : state.aiAvailability === 'downloadable'
+                    ? `<span class="ai-summary-fallback">浏览器 AI 模型未就绪，可等待自动下载</span>`
+                    : '';
+
             return (
                 `<tr class="detail-row"><td colspan="6"><div class="detail-inner">` +
                     `<p class="detail-desc">${escapeHtml(entry.description || '（无描述）')}</p>` +
                     summaryBlock +
+                    (aiButton ? `<div id="ai-summary-area-${escapeHtml(entry.full_name)}">${aiButton}</div>` : '') +
                     `<div class="detail-meta">` +
                         (entry.language ? `<span>${escapeHtml(entry.language)}</span>` : '') +
                         `<span>star ${entry.stargazers_count || 0}</span>` +
@@ -2301,6 +2655,19 @@
                 action: openAccessModal,
             });
 
+            commands.push({
+                id: 'view-table',
+                title: '切换到表格视图',
+                hint: state.viewMode === 'table' ? '当前' : '',
+                action: () => switchView('table'),
+            });
+            commands.push({
+                id: 'view-zoom',
+                title: '切换到星图视图',
+                hint: state.viewMode === 'zoom' ? '当前' : '',
+                action: () => switchView('zoom'),
+            });
+
             return commands;
         }
 
@@ -2487,6 +2854,582 @@
             toggleExpand(rows[state.selectedIndex].dataset.key);
         }
 
+        // ========== F1: 浏览器内 AI 摘要 ==========
+
+        /**
+         * 检测浏览器内置 LanguageModel API 的可用性
+         * 返回值：'available' | 'downloadable' | 'unavailable'
+         * 结果缓存在 state.aiAvailability，避免重复检测
+         */
+        async function checkAIAvailability() {
+            if (state.aiAvailability !== null) return state.aiAvailability;
+            try {
+                if (!('LanguageModel' in window)) {
+                    state.aiAvailability = 'unavailable';
+                    return state.aiAvailability;
+                }
+                const status = await LanguageModel.availability();
+                state.aiAvailability = status;
+                return status;
+            } catch {
+                state.aiAvailability = 'unavailable';
+                return state.aiAvailability;
+            }
+        }
+
+        /**
+         * 使用浏览器内置 LanguageModel 生成项目摘要
+         * 不可用时回退到静态 summary
+         * @param {string} fullName - 项目全名（owner/repo）
+         * @param {HTMLButtonElement} button - 触发按钮
+         */
+        async function generateAISummary(fullName, button) {
+            const entry = state.allEntries.find(e => e.full_name === fullName);
+            if (!entry) return;
+
+            const container = document.getElementById(`ai-summary-area-${cssEscape(fullName)}`);
+            if (!container) return;
+
+            button.disabled = true;
+            const loadingEl = document.createElement('span');
+            loadingEl.className = 'ai-summary-loading';
+            loadingEl.textContent = '本地推理中';
+            container.appendChild(loadingEl);
+
+            try {
+                const prompt = [
+                    `项目：${entry.full_name}`,
+                    entry.description ? `描述：${entry.description}` : '',
+                    entry.language ? `语言：${entry.language}` : '',
+                    (entry.topics || []).length > 0 ? `标签：${entry.topics.join(', ')}` : '',
+                    entry.summary ? `已有摘要：${entry.summary}` : '',
+                ].filter(Boolean).join('\n');
+
+                const session = await LanguageModel.create({
+                    initialPrompts: [{ role: 'system', content: AI_SUMMARY_SYSTEM_PROMPT }],
+                });
+                const result = await session.prompt(prompt);
+                session.destroy();
+
+                container.innerHTML = `<div class="ai-summary-result">${escapeHtml(result)}</div>`;
+            } catch (err) {
+                container.innerHTML = entry.summary
+                    ? `<div class="ai-summary-result">${escapeHtml(entry.summary)}</div>` +
+                      `<div class="ai-summary-fallback">本地 AI 不可用，已显示静态摘要</div>`
+                    : `<div class="ai-summary-fallback">本地 AI 不可用</div>`;
+            }
+        }
+
+        // ========== F2: 上下文首屏 ==========
+
+        /**
+         * 读取上次访问时保存的项目快照
+         * @returns {Object|null} 快照对象（含 entries 和 timestamp）
+         */
+        function readVisitSnapshot() {
+            try {
+                const raw = localStorage.getItem(VISIT_SNAPSHOT_KEY);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch {
+                return null;
+            }
+        }
+
+        /**
+         * 将当前项目列表保存为访问快照
+         * 只保留 full_name 和 stargazers_count，控制存储体积
+         * @param {Array<Object>} entries - 当前全部项目
+         */
+        function saveVisitSnapshot(entries) {
+            try {
+                const snapshot = {
+                    entries: entries.slice(0, VISIT_SNAPSHOT_MAX_ENTRIES).map(e => ({
+                        full_name: e.full_name,
+                        stargazers_count: e.stargazers_count || 0,
+                    })),
+                    timestamp: Date.now(),
+                };
+                localStorage.setItem(VISIT_SNAPSHOT_KEY, JSON.stringify(snapshot));
+            } catch {
+                // localStorage 满或禁用，静默忽略
+            }
+        }
+
+        /**
+         * 对比当前数据与上次访问快照，计算变化
+         * @param {Array<Object>} currentEntries - 当前全部项目
+         * @returns {Object|null} 变化对象（newProjects, starsGrew），无快照时返回 null
+         */
+        function computeWhatsNew(currentEntries) {
+            const snapshot = readVisitSnapshot();
+            if (!snapshot || !snapshot.entries) return null;
+
+            const oldMap = new Map(snapshot.entries.map(e => [e.full_name, e.stargazers_count || 0]));
+            const newProjects = [];
+            const starsGrew = [];
+
+            currentEntries.forEach(entry => {
+                const oldStars = oldMap.get(entry.full_name);
+                if (oldStars === undefined) {
+                    newProjects.push(entry);
+                } else if ((entry.stargazers_count || 0) > oldStars) {
+                    starsGrew.push({
+                        name: entry.full_name,
+                        delta: (entry.stargazers_count || 0) - oldStars,
+                        current: entry.stargazers_count || 0,
+                    });
+                }
+            });
+
+            return { newProjects, starsGrew, lastVisit: snapshot.timestamp };
+        }
+
+        /**
+         * 渲染「自上次以来」横幅
+         * @param {Object} changes - computeWhatsNew 返回的变化对象
+         */
+        function renderWhatsNew(changes) {
+            if (!changes) return;
+            const items = [];
+
+            if (changes.newProjects.length > 0) {
+                items.push(
+                    `<span class="whats-new-item">新增` +
+                    `<span class="whats-new-item-value">${changes.newProjects.length}</span>个项目</span>`
+                );
+            }
+
+            if (changes.starsGrew.length > 0) {
+                const totalDelta = changes.starsGrew.reduce((sum, item) => sum + item.delta, 0);
+                items.push(
+                    `<span class="whats-new-item">` +
+                    `<span class="whats-new-item-value">+${totalDelta}</span> stars` +
+                    `（${changes.starsGrew.length} 个项目增长）</span>`
+                );
+            }
+
+            if (items.length === 0) return;
+
+            const lastVisitDate = new Date(changes.lastVisit);
+            const lastVisitStr = lastVisitDate.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+
+            dom.whatsNewBody.innerHTML =
+                `<div class="whats-new-title">自 ${lastVisitStr} 以来的变化</div>` +
+                `<div class="whats-new-items">${items.join('')}</div>`;
+            dom.whatsNew.style.display = 'flex';
+        }
+
+        /**
+         * 关闭「自上次以来」横幅
+         */
+        function dismissWhatsNew() {
+            dom.whatsNew.style.display = 'none';
+        }
+
+        // ========== F3: 语音输入 ==========
+
+        /**
+         * 初始化语音识别，检测浏览器支持并显示按钮
+         * 使用 Web Speech API，识别结果填入搜索框并触发过滤
+         */
+        function initVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+
+            dom.voiceBtn.style.display = 'flex';
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            state.voiceRecognition = recognition;
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                dom.searchInput.value = transcript;
+                if (event.results[event.results.length - 1].isFinal) {
+                    applyFilters();
+                }
+            };
+
+            recognition.onerror = () => {
+                stopVoiceInput();
+            };
+
+            recognition.onend = () => {
+                stopVoiceInput();
+            };
+
+            dom.voiceBtn.addEventListener('click', toggleVoiceInput);
+        }
+
+        /**
+         * 切换语音输入的开始/停止状态
+         */
+        function toggleVoiceInput() {
+            if (state.voiceListening) {
+                state.voiceRecognition.stop();
+                stopVoiceInput();
+            } else {
+                try {
+                    state.voiceRecognition.start();
+                    state.voiceListening = true;
+                    dom.voiceBtn.classList.add('listening');
+                } catch {
+                    // 连续点击防护
+                }
+            }
+        }
+
+        /**
+         * 停止语音输入，恢复按钮状态
+         */
+        function stopVoiceInput() {
+            state.voiceListening = false;
+            dom.voiceBtn.classList.remove('listening');
+        }
+
+        // ========== F4: 语义缩放（星图视图） ==========
+
+        /**
+         * 切换视图模式：表格 / 星图
+         * @param {string} mode - 'table' 或 'zoom'
+         */
+        function switchView(mode) {
+            state.viewMode = mode;
+            if (mode === 'zoom') {
+                dom.viewTableBtn.classList.remove('active');
+                dom.viewZoomBtn.classList.add('active');
+                dom.tableWrap.style.display = 'none';
+                dom.pagination.style.display = 'none';
+                dom.zoomContainer.classList.add('active');
+                initZoomCanvas();
+            } else {
+                dom.viewTableBtn.classList.add('active');
+                dom.viewZoomBtn.classList.remove('active');
+                dom.zoomContainer.classList.remove('active');
+                dom.tableWrap.style.display = '';
+                renderResults({ flip: false });
+            }
+        }
+
+        /**
+         * 初始化语义缩放画布：计算聚类布局、设置画布尺寸、绑定交互
+         */
+        function initZoomCanvas() {
+            const canvas = dom.zoomCanvas;
+            const container = dom.zoomContainer;
+            const dpr = window.devicePixelRatio || 1;
+            const width = container.clientWidth;
+            const height = Math.max(500, Math.min(window.innerHeight - 300, 700));
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            computeZoomLayout(width, height);
+            renderZoomCanvas(ctx, width, height);
+        }
+
+        /**
+         * 计算语义缩放的聚类布局
+         * 按语言聚类，每个簇内项目按质量评分排列
+         * @param {number} width - 画布宽度
+         * @param {number} height - 画布高度
+         */
+        function computeZoomLayout(width, height) {
+            const entries = state.filteredEntries.length > 0 ? state.filteredEntries : state.allEntries;
+            const langMap = new Map();
+
+            entries.forEach(entry => {
+                const lang = entry.language || 'Other';
+                if (!langMap.has(lang)) {
+                    langMap.set(lang, []);
+                }
+                langMap.get(lang).push(entry);
+            });
+
+            const clusters = [];
+            const clusterCount = langMap.size;
+            const angleStep = (Math.PI * 2) / clusterCount;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const clusterRadius = Math.min(width, height) * 0.32;
+
+            let langIndex = 0;
+            const nodes = [];
+
+            langMap.forEach((items, lang) => {
+                const angle = langIndex * angleStep;
+                const cx = centerX + Math.cos(angle) * clusterRadius;
+                const cy = centerY + Math.sin(angle) * clusterRadius;
+                const color = getLanguageColor(lang);
+
+                clusters.push({
+                    lang,
+                    x: cx,
+                    y: cy,
+                    count: items.length,
+                    color,
+                });
+
+                items.forEach((entry, i) => {
+                    const itemAngle = (i / items.length) * Math.PI * 2;
+                    const itemRadius = 8 + Math.sqrt(i) * 6;
+                    nodes.push({
+                        x: cx + Math.cos(itemAngle) * itemRadius,
+                        y: cy + Math.sin(itemAngle) * itemRadius,
+                        entry,
+                        color,
+                        lang,
+                    });
+                });
+
+                langIndex++;
+            });
+
+            state.zoomNodes = nodes;
+            state.zoomClusters = clusters;
+            state.zoomScale = 1;
+            state.zoomOffsetX = 0;
+            state.zoomOffsetY = 0;
+        }
+
+        /**
+         * 渲染语义缩放画布
+         * @param {CanvasRenderingContext2D} ctx - 2D 上下文
+         * @param {number} width - 画布逻辑宽度
+         * @param {number} height - 画布逻辑高度
+         */
+        function renderZoomCanvas(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.save();
+            ctx.translate(width / 2 + state.zoomOffsetX, height / 2 + state.zoomOffsetY);
+            ctx.scale(state.zoomScale, state.zoomScale);
+            ctx.translate(-width / 2, -height / 2);
+
+            // 绘制聚类连线
+            state.zoomClusters.forEach(cluster => {
+                ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(width / 2, height / 2);
+                ctx.lineTo(cluster.x, cluster.y);
+                ctx.stroke();
+            });
+
+            // 绘制聚类光晕
+            state.zoomClusters.forEach(cluster => {
+                const r = ZOOM_CLUSTER_RADIUS_BASE;
+                const grad = ctx.createRadialGradient(cluster.x, cluster.y, 0, cluster.x, cluster.y, r);
+                grad.addColorStop(0, cluster.color + '15');
+                grad.addColorStop(1, cluster.color + '00');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(cluster.x, cluster.y, r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 绘制聚类标签（低缩放级别时显示）
+            if (state.zoomScale < ZOOM_LABEL_THRESHOLD) {
+                ctx.font = '600 11px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#57534e';
+                state.zoomClusters.forEach(cluster => {
+                    ctx.fillText(`${cluster.lang} (${cluster.count})`, cluster.x, cluster.y - ZOOM_CLUSTER_RADIUS_BASE - 4);
+                });
+            }
+
+            // 绘制项目节点
+            const showLabels = state.zoomScale >= ZOOM_LABEL_THRESHOLD;
+            const showDetail = state.zoomScale >= ZOOM_DETAIL_THRESHOLD;
+
+            state.zoomNodes.forEach(node => {
+                const isHovered = state.zoomHoveredNode === node;
+                const r = isHovered ? ZOOM_NODE_RADIUS_HOVER : ZOOM_NODE_RADIUS;
+
+                ctx.fillStyle = node.color;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (isHovered) {
+                    ctx.strokeStyle = '#1c1917';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+
+                if (showLabels && (showDetail || isHovered)) {
+                    ctx.font = '500 10px -apple-system, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#1c1917';
+                    const name = node.entry.full_name;
+                    ctx.fillText(name, node.x + r + 3, node.y + 3);
+                }
+            });
+
+            ctx.restore();
+        }
+
+        /**
+         * 将屏幕坐标转换为画布世界坐标
+         * @param {number} screenX - 鼠标屏幕 X
+         * @param {number} screenY - 鼠标屏幕 Y
+         * @param {number} width - 画布逻辑宽度
+         * @param {number} height - 画布逻辑高度
+         * @returns {Object} 世界坐标 {x, y}
+         */
+        function screenToWorld(screenX, screenY, width, height) {
+            const cx = width / 2;
+            const cy = height / 2;
+            const x = ((screenX - cx - state.zoomOffsetX) / state.zoomScale) + cx;
+            const y = ((screenY - cy - state.zoomOffsetY) / state.zoomScale) + cy;
+            return { x, y };
+        }
+
+        /**
+         * 查找鼠标位置下最近的节点
+         * @param {number} worldX - 世界坐标 X
+         * @param {number} worldY - 世界坐标 Y
+         * @returns {Object|null} 命中的节点或 null
+         */
+        function findNodeAt(worldX, worldY) {
+            const hitRadius = Math.max(ZOOM_NODE_RADIUS_HOVER, ZOOM_NODE_RADIUS / state.zoomScale);
+            for (let i = state.zoomNodes.length - 1; i >= 0; i--) {
+                const node = state.zoomNodes[i];
+                const dx = node.x - worldX;
+                const dy = node.y - worldY;
+                if (dx * dx + dy * dy <= hitRadius * hitRadius) {
+                    return node;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * 绑定语义缩放画布的鼠标交互
+         * 支持：拖拽平移、滚轮缩放、hover 高亮、点击展开详情
+         */
+        function bindZoomCanvasEvents() {
+            const canvas = dom.zoomCanvas;
+            const container = dom.zoomContainer;
+            const ctx = canvas.getContext('2d');
+
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                };
+            }
+
+            function getCanvasSize() {
+                const dpr = window.devicePixelRatio || 1;
+                return {
+                    width: canvas.width / dpr,
+                    height: canvas.height / dpr,
+                };
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                state.zoomDragging = true;
+                const pos = getMousePos(e);
+                state.zoomLastMouseX = pos.x;
+                state.zoomLastMouseY = pos.y;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const pos = getMousePos(e);
+                const size = getCanvasSize();
+
+                if (state.zoomDragging) {
+                    state.zoomOffsetX += pos.x - state.zoomLastMouseX;
+                    state.zoomOffsetY += pos.y - state.zoomLastMouseY;
+                    state.zoomLastMouseX = pos.x;
+                    state.zoomLastMouseY = pos.y;
+                    renderZoomCanvas(ctx, size.width, size.height);
+                } else {
+                    const world = screenToWorld(pos.x, pos.y, size.width, size.height);
+                    const hovered = findNodeAt(world.x, world.y);
+                    if (hovered !== state.zoomHoveredNode) {
+                        state.zoomHoveredNode = hovered;
+                        renderZoomCanvas(ctx, size.width, size.height);
+                    }
+                    if (hovered) {
+                        dom.zoomTooltip.textContent = `${hovered.entry.full_name} — ${hovered.entry.description || ''}`;
+                        dom.zoomTooltip.style.display = 'block';
+                        dom.zoomTooltip.style.left = (pos.x + 12) + 'px';
+                        dom.zoomTooltip.style.top = (pos.y - 24) + 'px';
+                    } else {
+                        dom.zoomTooltip.style.display = 'none';
+                    }
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                state.zoomDragging = false;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                state.zoomDragging = false;
+                state.zoomHoveredNode = null;
+                dom.zoomTooltip.style.display = 'none';
+                const size = getCanvasSize();
+                renderZoomCanvas(ctx, size.width, size.height);
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const pos = getMousePos(e);
+                const size = getCanvasSize();
+                const delta = -e.deltaY * ZOOM_WHEEL_FACTOR;
+                const newScale = Math.min(Math.max(state.zoomScale * (1 + delta), ZOOM_MIN_SCALE), ZOOM_MAX_SCALE);
+                const scaleRatio = newScale / state.zoomScale;
+
+                state.zoomOffsetX = pos.x - (pos.x - state.zoomOffsetX) * scaleRatio;
+                state.zoomOffsetY = pos.y - (pos.y - state.zoomOffsetY) * scaleRatio;
+                state.zoomScale = newScale;
+                renderZoomCanvas(ctx, size.width, size.height);
+            }, { passive: false });
+
+            canvas.addEventListener('click', (e) => {
+                if (state.zoomDragging) return;
+                const pos = getMousePos(e);
+                const size = getCanvasSize();
+                const world = screenToWorld(pos.x, pos.y, size.width, size.height);
+                const node = findNodeAt(world.x, world.y);
+                if (node) {
+                    if (state.viewMode === 'zoom') {
+                        switchView('table');
+                    }
+                    setTimeout(() => {
+                        state.activeTopic = '';
+                        state.currentPage = 1;
+                        state.filteredEntries = state.allEntries.slice();
+                        const totalPages = Math.ceil(state.filteredEntries.length / PAGE_SIZE) || 1;
+                        const entryIndex = state.filteredEntries.indexOf(node.entry);
+                        if (entryIndex >= 0) {
+                            state.currentPage = Math.floor(entryIndex / PAGE_SIZE) + 1;
+                        }
+                        renderResults({ flip: false });
+                        setTimeout(() => {
+                            toggleExpand(node.entry.full_name);
+                            const row = dom.results.querySelector(`tr.data-row[data-key="${cssEscape(node.entry.full_name)}"]`);
+                            if (row) row.scrollIntoView({ block: 'center' });
+                        }, 50);
+                    }, 50);
+                }
+            });
+        }
+
         // ========== 事件绑定 ==========
 
         // 全局快捷键
@@ -2638,7 +3581,39 @@
             btn.addEventListener('click', () => copyCodeBlock(btn));
         });
 
+        // 上下文首屏横幅关闭
+        dom.whatsNewDismiss.addEventListener('click', dismissWhatsNew);
+
+        // 视图切换
+        dom.viewTableBtn.addEventListener('click', () => switchView('table'));
+        dom.viewZoomBtn.addEventListener('click', () => switchView('zoom'));
+
+        // 语义缩放控制按钮
+        dom.zoomInBtn.addEventListener('click', () => {
+            state.zoomScale = Math.min(state.zoomScale * 1.3, ZOOM_MAX_SCALE);
+            const dpr = window.devicePixelRatio || 1;
+            const ctx = dom.zoomCanvas.getContext('2d');
+            renderZoomCanvas(ctx, dom.zoomCanvas.width / dpr, dom.zoomCanvas.height / dpr);
+        });
+        dom.zoomOutBtn.addEventListener('click', () => {
+            state.zoomScale = Math.max(state.zoomScale / 1.3, ZOOM_MIN_SCALE);
+            const dpr = window.devicePixelRatio || 1;
+            const ctx = dom.zoomCanvas.getContext('2d');
+            renderZoomCanvas(ctx, dom.zoomCanvas.width / dpr, dom.zoomCanvas.height / dpr);
+        });
+        dom.zoomResetBtn.addEventListener('click', () => {
+            state.zoomScale = 1;
+            state.zoomOffsetX = 0;
+            state.zoomOffsetY = 0;
+            const dpr = window.devicePixelRatio || 1;
+            const ctx = dom.zoomCanvas.getContext('2d');
+            renderZoomCanvas(ctx, dom.zoomCanvas.width / dpr, dom.zoomCanvas.height / dpr);
+        });
+
         // 初始化
+        checkAIAvailability();
+        initVoiceInput();
+        bindZoomCanvasEvents();
         loadData();
     </script>
 </body>
