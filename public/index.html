@@ -52,6 +52,10 @@
             --color-tag-bg: #f5f5f4;
             --color-tag-text: #44403c;
 
+            /* 表格行微图形：stars 微条与评分点阵使用的轨道色 */
+            --color-meter-track: #ececea;
+            --color-meter-fill: #78716c;
+
             /* 阴影：微妙、自然 */
             --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
             --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
@@ -76,13 +80,19 @@
             --space-10: 40px;
             --space-12: 48px;
 
+            /* 表格密度：圆桌裁决 28px 行高 / 13px 字号 / 每页 50 条 */
+            --row-height: 28px;
+            --row-font-size: 13px;
+
             /* 字体 */
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                 "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
             --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
 
-            /* 过渡 */
+            /* 过渡：150ms 标准交互；80ms 数字增亮；120ms 三态与淡化 */
             --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-glint: 80ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* ========== 基础重置 ========== */
@@ -115,7 +125,7 @@
         }
 
         .header-container {
-            max-width: 1080px;
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -174,20 +184,20 @@
 
         /* ========== 主内容区 ========== */
         .main {
-            max-width: 1080px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: var(--space-8) var(--space-4);
         }
 
         /* ========== 搜索区 ========== */
         .search-section {
-            margin-bottom: var(--space-8);
+            margin-bottom: var(--space-5);
         }
 
         .search-box {
             display: flex;
             gap: var(--space-2);
-            margin-bottom: var(--space-4);
+            margin-bottom: var(--space-3);
         }
 
         .search-input-wrapper {
@@ -197,7 +207,7 @@
 
         .search-input {
             width: 100%;
-            padding: 10px 14px 10px 40px;
+            padding: 10px 14px 10px 36px;
             font-size: 0.9375rem;
             font-family: inherit;
             border: 1px solid var(--color-border);
@@ -227,7 +237,23 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--color-text-muted);
-            font-size: 15px;
+            display: flex;
+            pointer-events: none;
+        }
+
+        /* 搜索框右侧的键盘提示：告诉用户 / 与 ⌘K 的存在 */
+        .search-kbd {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-mono);
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xs);
+            padding: 1px 6px;
+            background-color: var(--color-bg);
             pointer-events: none;
         }
 
@@ -249,24 +275,13 @@
             border-color: var(--color-border-strong);
         }
 
-        .search-button.primary {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
-            color: white;
-        }
-
-        .search-button.primary:hover {
-            background-color: var(--color-accent-hover);
-            border-color: var(--color-accent-hover);
-        }
-
         /* ========== 过滤栏 ========== */
         .filter-bar {
             display: flex;
             gap: var(--space-4);
             flex-wrap: wrap;
             align-items: center;
-            padding: var(--space-3) var(--space-4);
+            padding: var(--space-2) var(--space-3);
             background-color: var(--color-card);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
@@ -285,7 +300,7 @@
         }
 
         .filter-select {
-            padding: 6px 10px;
+            padding: 5px 10px;
             font-size: 0.8125rem;
             font-family: inherit;
             border: 1px solid var(--color-border);
@@ -318,146 +333,414 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* 搜索区提示语：说明过滤范围，避免用户在图谱视图下疑惑搜索区是否生效 */
         .filter-hint {
             font-size: 0.75rem;
             color: var(--color-text-muted);
             margin-top: var(--space-2);
         }
 
-        /* ========== 结果列表 ========== */
-        .results {
+        /* ========== Topic 分面导航（替代图谱的结构入口） ========== */
+        .facet-nav {
+            display: flex;
+            gap: var(--space-2);
+            align-items: stretch;
+            overflow-x: auto;
+            padding-bottom: var(--space-2);
+            margin-bottom: var(--space-3);
+            scrollbar-width: thin;
+        }
+
+        .facet-chip {
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            gap: var(--space-4);
-        }
-
-        /* ========== 项目卡片 ========== */
-        .card {
-            background-color: var(--color-card);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-5);
-            transition: border-color var(--transition), box-shadow var(--transition);
-        }
-
-        .card:hover {
-            border-color: var(--color-border-strong);
-            box-shadow: var(--shadow-md);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--space-2);
-            gap: var(--space-3);
-        }
-
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
-        .card-title a {
-            color: var(--color-link);
-            text-decoration: none;
-            transition: color var(--transition);
-        }
-
-        .card-title a:hover {
-            color: var(--color-link-hover);
-        }
-
-        .card-score {
+            gap: 3px;
+            padding: 6px 10px;
+            font-family: inherit;
             font-size: 0.75rem;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: var(--radius-pill);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--color-card);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            text-align: left;
+            transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+        }
+
+        .facet-chip:hover {
+            border-color: var(--color-border-strong);
+            color: var(--color-text);
+        }
+
+        .facet-chip:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--color-interactive);
+        }
+
+        .facet-chip.active {
+            border-color: var(--color-interactive);
+            background-color: var(--color-interactive-bg);
+            color: var(--color-interactive);
+            font-weight: 500;
+        }
+
+        .facet-chip-top {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-2);
             white-space: nowrap;
+        }
+
+        .facet-chip-name {
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .facet-chip-count {
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
             font-variant-numeric: tabular-nums;
         }
 
-        .card-score.high {
-            background-color: var(--color-success-bg);
-            color: var(--color-score-high);
-        }
-
-        .card-score.mid {
-            background-color: var(--color-warning-bg);
-            color: var(--color-score-mid);
-        }
-
-        .card-score.low {
-            background-color: var(--color-danger-bg);
-            color: var(--color-score-low);
-        }
-
-        .card-description {
+        .facet-chip.active .facet-chip-count {
             color: var(--color-text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: var(--space-3);
-            line-height: 1.5;
         }
 
-        .card-summary {
-            font-size: 0.875rem;
+        /* 分面微条图：轨道宽度固定，内层为项目数占比条，叠加深色段为高质量占比 */
+        .facet-bar {
+            width: 100%;
+            height: 3px;
+            background-color: var(--color-meter-track);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+            display: flex;
+        }
+
+        .facet-bar-count {
+            height: 100%;
+            background-color: var(--color-border-strong);
+            display: flex;
+        }
+
+        .facet-bar-high {
+            height: 100%;
+            background-color: var(--color-meter-fill);
+        }
+
+        /* ========== 高密度表格（唯一主视图） ========== */
+        .table-wrap {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            transition: opacity var(--transition-fast);
+        }
+
+        .table-wrap.fading {
+            opacity: 0;
+        }
+
+        .repo-table {
+            width: 100%;
+            min-width: 820px;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: var(--row-font-size);
+        }
+
+        .repo-table thead th {
+            height: 32px;
+            padding: 0 var(--space-2);
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            border-bottom: 1px solid var(--color-border);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .repo-table thead th.sortable {
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .repo-table thead th.sortable:hover {
+            color: var(--color-text);
+        }
+
+        .repo-table thead th.sorted {
+            color: var(--color-interactive);
+            font-weight: 600;
+        }
+
+        .sort-arrow {
+            display: inline-block;
+            margin-left: 3px;
+            vertical-align: -1px;
+        }
+
+        /* 列宽分配：名称弹性最大，topics 次之，其余定宽 */
+        .col-name { width: 34%; }
+        .col-lang { width: 110px; }
+        .col-stars { width: 130px; }
+        .col-score { width: 110px; }
+        .col-topics { width: auto; }
+        .col-chevron { width: 32px; }
+
+        .repo-table tbody tr.data-row {
+            height: var(--row-height);
+            cursor: pointer;
+            border-bottom: 1px solid var(--color-border);
+            transition: box-shadow var(--transition-fast), background-color var(--transition-fast);
+        }
+
+        .repo-table tbody tr.data-row:last-child {
+            border-bottom: none;
+        }
+
+        /* hover：行内 1px 描边浮现，不刷底色块（Rauno 三态提纯） */
+        .repo-table tbody tr.data-row:hover {
+            box-shadow: inset 0 0 0 1px var(--color-border-strong);
+        }
+
+        /* focus：2px 定制环，120ms 出现，替代浏览器默认 outline */
+        .repo-table tbody tr.data-row:focus-visible {
+            outline: none;
+            box-shadow: inset 0 0 0 2px var(--color-interactive);
+        }
+
+        /* j/k 键盘选中行：底色标记 */
+        .repo-table tbody tr.data-row.selected {
+            background-color: var(--color-interactive-bg);
+        }
+
+        .repo-table tbody td {
+            padding: 0 var(--space-2);
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cell-name {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-2);
+            overflow: hidden;
+        }
+
+        .cell-name a {
+            color: var(--color-link);
+            text-decoration: none;
+            font-weight: 600;
+            flex-shrink: 0;
+            max-width: 46%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color var(--transition);
+        }
+
+        .cell-name a:hover {
+            color: var(--color-link-hover);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        /* 描述内联截断：与名称同行，灰色次级信息 */
+        .cell-desc {
+            color: var(--color-text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .cell-lang {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--color-text-secondary);
+        }
+
+        .lang-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .cell-stars {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* stars 数字：hover 行时 80ms 增亮 */
+        .cell-stars-num {
+            color: var(--color-text-secondary);
+            transition: color var(--transition-glint);
+        }
+
+        tr.data-row:hover .cell-stars-num {
+            color: var(--color-text);
+        }
+
+        .stars-icon {
+            color: var(--color-text-muted);
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        /* stars 内联微条：归一化到当前筛选集最大值 */
+        .stars-bar {
+            width: 48px;
+            height: 3px;
+            background-color: var(--color-meter-track);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .stars-bar-fill {
+            height: 100%;
+            background-color: var(--color-meter-fill);
+        }
+
+        .cell-score {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 评分微点阵：5 圆点，填充数即分数，颜色随 high/mid/low */
+        .score-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .score-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--color-meter-track);
+        }
+
+        .score-dots.high .score-dot.filled { background-color: var(--color-score-high); }
+        .score-dots.mid .score-dot.filled { background-color: var(--color-score-mid); }
+        .score-dots.low .score-dot.filled { background-color: var(--color-score-low); }
+
+        .cell-score-num {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cell-topics {
+            display: flex;
+            gap: var(--space-1);
+            overflow: hidden;
+        }
+
+        .tag {
+            font-size: 0.6875rem;
+            padding: 1px 7px;
+            background-color: var(--color-tag-bg);
+            color: var(--color-tag-text);
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--color-border);
+            white-space: nowrap;
+        }
+
+        .tag.use-case {
+            background-color: var(--color-warning-bg);
+            color: var(--color-warning);
+            border-color: var(--color-warning-bg);
+        }
+
+        .tag-more {
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            align-self: center;
+        }
+
+        .cell-chevron {
+            color: var(--color-text-muted);
+            text-align: center;
+        }
+
+        .chevron-icon {
+            display: inline-block;
+            transition: transform var(--transition-fast);
+        }
+
+        tr.data-row.expanded .chevron-icon {
+            transform: rotate(90deg);
+        }
+
+        /* ========== 行内展开详情 ========== */
+        tr.detail-row td {
+            padding: var(--space-3) var(--space-4) var(--space-4) var(--space-4);
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--color-bg);
+            white-space: normal;
+        }
+
+        .detail-inner {
+            animation: detail-in 120ms ease-out;
+        }
+
+        @keyframes detail-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .detail-desc {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            margin-bottom: var(--space-2);
+        }
+
+        .detail-summary {
+            font-size: 0.8125rem;
             margin-bottom: var(--space-3);
-            padding: var(--space-3);
+            padding: var(--space-2) var(--space-3);
             background-color: var(--color-summary-bg);
             border-left: 3px solid var(--color-summary-border);
             border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
             line-height: 1.6;
         }
 
-        .card-summary-label {
+        .detail-summary-label {
             font-size: 0.6875rem;
             color: var(--color-summary-label);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: var(--space-1);
+            margin-bottom: 2px;
         }
 
-        .card-meta {
+        .detail-meta {
             display: flex;
             flex-wrap: wrap;
             gap: var(--space-4);
-            font-size: 0.8125rem;
+            font-size: 0.75rem;
             color: var(--color-text-secondary);
             margin-bottom: var(--space-3);
+            font-variant-numeric: tabular-nums;
         }
 
-        .card-meta-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .card-tags {
+        .detail-tags {
             display: flex;
             flex-wrap: wrap;
             gap: var(--space-1);
             margin-bottom: var(--space-3);
         }
 
-        .tag {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            background-color: var(--color-tag-bg);
-            color: var(--color-tag-text);
-            border-radius: var(--radius-pill);
-            border: 1px solid var(--color-border);
-        }
-
-        .tag.use-case {
-            background-color: var(--color-warning-bg);
-            color: #92400e;
-            border-color: #fde68a;
-        }
-
-        .card-actions {
+        .detail-actions {
             display: flex;
             gap: var(--space-2);
             flex-wrap: wrap;
@@ -486,23 +769,25 @@
         }
 
         .action-button.deepwiki {
-            color: #0369a1;
-            border-color: #bae6fd;
+            color: var(--color-warning);
+            border-color: var(--color-warning-bg);
         }
 
         .action-button.deepwiki:hover {
-            background-color: #f0f9ff;
-            border-color: #7dd3fc;
+            background-color: var(--color-warning-bg);
+            color: var(--color-warning);
+            border-color: var(--color-warning);
         }
 
         .action-button.zread {
             color: var(--color-success);
-            border-color: #a7f3d0;
+            border-color: var(--color-success-bg);
         }
 
         .action-button.zread:hover {
             background-color: var(--color-success-bg);
-            border-color: #6ee7b7;
+            color: var(--color-success);
+            border-color: var(--color-success);
         }
 
         /* ========== 状态提示 ========== */
@@ -517,54 +802,29 @@
             color: var(--color-danger);
         }
 
-        .loading {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--color-border);
-            border-top-color: var(--color-text-secondary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: var(--space-2);
-            vertical-align: middle;
+        /* ========== 骨架屏：描表格真实轮廓，逐行错峰点亮 ========== */
+        .skeleton-row td {
+            height: var(--row-height);
+            opacity: 0;
+            animation: skeleton-in 120ms ease-out forwards;
+            animation-delay: var(--skeleton-delay, 0ms);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes skeleton-in {
+            to { opacity: 1; }
         }
 
-        /* ========== 骨架屏（首次加载占位） ========== */
-        /* 编辑级极简主义：静态浅灰块，不用渐变动画 */
-        .skeleton-card {
-            background-color: var(--color-card);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-5);
-            margin-bottom: var(--space-4);
-        }
-
-        .skeleton-line {
-            height: 10px;
-            background-color: var(--color-border);
-            border-radius: var(--radius-sm);
-            margin-bottom: var(--space-2);
-        }
-
-        .skeleton-line.title {
-            width: 45%;
-            height: 16px;
-            margin-bottom: var(--space-3);
-        }
-
-        .skeleton-line.short {
-            width: 70%;
-        }
-
-        .skeleton-line.meta {
-            width: 90%;
+        .skeleton-block {
             height: 8px;
-            margin-top: var(--space-3);
+            background-color: var(--color-meter-track);
+            border-radius: var(--radius-xs);
         }
+
+        .skeleton-block.name { width: 38%; height: 10px; }
+        .skeleton-block.lang { width: 48px; }
+        .skeleton-block.stars { width: 72px; }
+        .skeleton-block.score { width: 44px; }
+        .skeleton-block.topics { width: 60%; }
 
         /* ========== 分页 ========== */
         .pagination {
@@ -572,12 +832,12 @@
             justify-content: center;
             align-items: center;
             gap: var(--space-3);
-            margin-top: var(--space-8);
+            margin-top: var(--space-6);
         }
 
         .pagination button {
-            min-width: 36px;
-            height: 36px;
+            min-width: 32px;
+            height: 32px;
             padding: 0 10px;
             font-size: 0.8125rem;
             font-weight: 500;
@@ -599,12 +859,16 @@
             border-color: var(--color-border-strong);
         }
 
+        .pagination button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--color-interactive);
+        }
+
         .pagination button:disabled {
             opacity: 0.4;
             cursor: not-allowed;
         }
 
-        /* 当前页：使用强调色高亮 */
         .pagination button.active {
             background-color: var(--color-accent);
             color: #ffffff;
@@ -612,12 +876,10 @@
             cursor: default;
         }
 
-        /* 上一页/下一页：稍宽 */
         .pagination button.nav-btn {
             padding: 0 14px;
         }
 
-        /* 省略号：非交互 */
         .pagination-ellipsis {
             min-width: 28px;
             text-align: center;
@@ -631,6 +893,105 @@
             color: var(--color-text-secondary);
             font-variant-numeric: tabular-nums;
             margin-left: var(--space-2);
+        }
+
+        /* ========== 命令面板（⌘K） ========== */
+        .palette-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(28, 25, 23, 0.35);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 1100;
+            padding: 18vh var(--space-4) var(--space-4);
+        }
+
+        .palette-overlay.active {
+            display: flex;
+        }
+
+        .palette {
+            width: 100%;
+            max-width: 560px;
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: palette-in 120ms ease-out;
+        }
+
+        @keyframes palette-in {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .palette-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 0.9375rem;
+            font-family: inherit;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--color-card);
+            color: var(--color-text);
+            outline: none;
+        }
+
+        .palette-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .palette-list {
+            max-height: 320px;
+            overflow-y: auto;
+            padding: var(--space-1);
+        }
+
+        .palette-section {
+            padding: var(--space-2) var(--space-3) var(--space-1);
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .palette-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .palette-item.active {
+            background-color: var(--color-interactive-bg);
+        }
+
+        .palette-item-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .palette-item-hint {
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .palette-empty {
+            padding: var(--space-6);
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
         }
 
         /* ========== 页脚 ========== */
@@ -660,7 +1021,6 @@
             gap: var(--space-2);
         }
 
-        /* ========== 接入说明按钮 ========== */
         .access-button {
             display: inline-flex;
             align-items: center;
@@ -685,7 +1045,6 @@
             border-color: var(--color-border-strong);
         }
 
-        /* 纯图标按钮：保持正方形点击区，无文字 */
         .access-button.icon-only {
             padding: 6px;
             line-height: 0;
@@ -751,47 +1110,10 @@
             background-color: var(--color-bg);
         }
 
-        .modal-tabs {
-            display: flex;
-            gap: var(--space-1);
-            padding: 0 var(--space-6);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .modal-tab {
-            padding: var(--space-3) var(--space-4);
-            font-size: 0.875rem;
-            font-weight: 500;
-            font-family: inherit;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            transition: color var(--transition), border-bottom-color var(--transition);
-        }
-
-        .modal-tab:hover {
-            color: var(--color-text);
-        }
-
-        .modal-tab.active {
-            color: var(--color-interactive);
-            border-bottom-color: var(--color-interactive);
-        }
-
         .modal-body {
             padding: var(--space-5) var(--space-6);
             overflow-y: auto;
             flex: 1;
-        }
-
-        .modal-tab-content {
-            display: none;
-        }
-
-        .modal-tab-content.active {
-            display: block;
         }
 
         .modal-desc {
@@ -878,21 +1200,12 @@
                 width: 100%;
             }
 
-            .filter-bar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
             .stats {
                 margin-left: 0;
             }
 
-            .card-header {
-                flex-direction: column;
-            }
-
-            .card-score {
-                align-self: flex-start;
+            .search-kbd {
+                display: none;
             }
         }
 
@@ -916,245 +1229,29 @@
         }
 
         /* ========== 选中文字 ========== */
-        /* 保留品牌色作为浏览器选中高亮，体现品牌识别 */
         ::selection {
             background-color: rgba(13, 148, 136, 0.15);
         }
 
-        /* ========== 视图切换 Tab ========== */
-        .view-tabs {
-            display: flex;
-            gap: var(--space-1);
-            margin-bottom: var(--space-4);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .view-tab {
-            padding: var(--space-2) var(--space-4);
-            font-size: 0.875rem;
-            font-weight: 500;
-            font-family: inherit;
-            border: none;
-            border-bottom: 2px solid transparent;
-            background: transparent;
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            transition: color var(--transition), border-bottom-color var(--transition);
-            margin-bottom: -1px;
-        }
-
-        .view-tab:hover {
-            color: var(--color-text);
-        }
-
-        .view-tab.active {
-            color: var(--color-interactive);
-            border-bottom-color: var(--color-interactive);
-        }
-
-        /* ========== 图谱视图 ========== */
-        .graph-view {
-            display: none;
-        }
-
-        .graph-view.active {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-3);
-        }
-
-        .graph-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--space-3);
-            font-size: 0.8125rem;
-            color: var(--color-text-secondary);
-            padding: var(--space-2) var(--space-3);
-            background-color: var(--color-card);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-md);
-        }
-
-        .graph-info {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            color: var(--color-text-secondary);
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* 统计数字：稍加突出，便于快速定位 */
-        .graph-info strong {
-            color: var(--color-text);
-            font-weight: 600;
-        }
-
-        /* toggle 按钮组：用容器边框形成视觉分组，与左侧信息块拉开 */
-        .graph-toggle-group {
-            display: inline-flex;
-            gap: var(--space-1);
-            padding: var(--space-1);
-            background-color: var(--color-bg);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-        }
-
-        .graph-toggle-btn {
-            padding: 5px 12px;
-            font-size: 0.8125rem;
-            font-family: inherit;
-            border: 1px solid transparent;
-            border-radius: var(--radius-sm);
-            background-color: transparent;
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            transition: background-color var(--transition), color var(--transition), border-color var(--transition);
-        }
-
-        .graph-toggle-btn:hover {
-            background-color: var(--color-card);
-            color: var(--color-text);
-        }
-
-        .graph-toggle-btn.active {
-            background-color: var(--color-card);
-            border-color: var(--color-border);
-            color: var(--color-interactive);
-            font-weight: 500;
-        }
-
-        .graph-content {
-            display: flex;
-            gap: var(--space-4);
-        }
-
-        .graph-container {
-            flex: 1;
-            position: relative;
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            background-color: var(--color-card);
-            height: 600px;
-            overflow: hidden;
-        }
-
-        #graphCanvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        .graph-legend {
-            position: absolute;
-            bottom: var(--space-3);
-            left: var(--space-3);
-            padding: var(--space-2) var(--space-3);
-            background-color: var(--color-card);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
-            font-size: 0.75rem;
-            color: var(--color-text-secondary);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        .graph-legend-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .graph-legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        /* ========== 图谱详情面板 ========== */
-        .graph-detail {
-            width: 320px;
-            flex-shrink: 0;
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            background-color: var(--color-card);
-            padding: var(--space-4);
-            height: 600px;
-            overflow-y: auto;
-        }
-
-        .graph-detail-placeholder {
-            color: var(--color-text-muted);
-            font-size: 0.875rem;
-            text-align: center;
-            padding-top: var(--space-12);
-        }
-
-        .graph-detail-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            margin-bottom: var(--space-2);
-        }
-
-        .graph-detail-title a {
-            color: var(--color-link);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-
-        .graph-detail-title a:hover {
-            color: var(--color-link-hover);
-        }
-
-        .graph-detail-desc {
-            font-size: 0.8125rem;
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-3);
-            line-height: 1.5;
-        }
-
-        .graph-detail-meta {
-            font-size: 0.75rem;
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-3);
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-3);
-        }
-
-        .graph-detail-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-1);
-            margin-bottom: var(--space-3);
-        }
-
-        .graph-detail-actions {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-        }
-
-        .graph-detail-actions .action-button {
-            justify-content: center;
-        }
-
-        /* ========== 响应式：图谱视图 ========== */
-        @media (max-width: 900px) {
-            .graph-view.active {
-                flex-direction: column;
+        /* ========== 动效降级：prefers-reduced-motion 一律瞬时切换 ========== */
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
             }
 
-            .graph-container {
-                height: 400px;
+            .palette,
+            .detail-inner,
+            .skeleton-row td {
+                animation: none;
             }
 
-            .graph-detail {
-                width: 100%;
-                height: auto;
-                max-height: 300px;
+            .skeleton-row td {
+                opacity: 1;
+            }
+
+            .table-wrap,
+            .chevron-icon {
+                transition: none;
             }
         }
     </style>
@@ -1204,68 +1301,30 @@
                 <div class="modal-title">Agent 接入说明</div>
                 <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
             </div>
-            <div class="modal-tabs">
-                <button class="modal-tab active" id="tabMcp">MCP Server</button>
-                <button class="modal-tab" id="tabSkill">Agent Skill</button>
-            </div>
             <div class="modal-body">
-                <!-- MCP Tab -->
-                <div class="modal-tab-content active" id="contentMcp">
-                    <p class="modal-desc">
-                        加入 agent（Trae / Cursor / Claude Code / Codex 等）的 MCP 配置即可。零门槛配置走关键词匹配；增强配置接入智谱 GLM-4.7-Flash（永久免费）支持语义搜索。
-                    </p>
-                    <div class="modal-section-title">零门槛配置（关键词匹配）</div>
-                    <div class="code-block-wrapper">
-                        <button class="copy-button" data-copy-target="mcp-basic">复制</button>
-                        <pre class="code-block" id="mcp-basic">{
-  "mcpServers": {
-    "star-knowledge": {
-      "command": "python",
-      "args": ["/absolute/path/to/star-knowledge-base/src/mcp_server.py"],
-      "env": {
-        "STAR_DATA_URL": "https://fxbin.github.io/star-knowledge-base/data.json"
-      }
-    }
-  }
-}</pre>
-                    </div>
-                    <div class="modal-section-title">推荐增强配置（智谱免费 API，语义搜索）</div>
-                    <div class="code-block-wrapper">
-                        <button class="copy-button" data-copy-target="mcp-enhanced">复制</button>
-                        <pre class="code-block" id="mcp-enhanced">{
-  "mcpServers": {
-    "star-knowledge": {
-      "command": "python",
-      "args": ["/absolute/path/to/star-knowledge-base/src/mcp_server.py"],
-      "env": {
-        "STAR_DATA_URL": "https://fxbin.github.io/star-knowledge-base/data.json",
-        "LLM_PROVIDER": "openai",
-        "LLM_API_KEY": "你的智谱 key",
-        "LLM_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
-        "LLM_MODEL": "glm-4.7-flash"
-      }
-    }
-  }
-}</pre>
-                    </div>
-                    <p class="modal-desc">
-                        详细环境变量见
-                        <a href="https://github.com/fxbin/star-knowledge-base#本地配置-mcp-server" target="_blank" rel="noopener">GitHub 仓库 README</a>。
-                    </p>
-                </div>
-
-                <!-- Skill Tab -->
-                <div class="modal-tab-content" id="contentSkill">
-                    <p class="modal-desc">
-                        <code>star-first-habit</code> Skill 让 agent 在需要某个库时优先查 star 知识库，未匹配才走 Google。支持 Claude Code / Cursor / Trae / Codex / OpenCode 等 40+ 工具。
-                    </p>
-                    <div class="modal-section-title">安装命令</div>
-                    <div class="code-block-wrapper">
-                        <button class="copy-button" data-copy-target="skill-cmd">复制</button>
-                        <pre class="code-block" id="skill-cmd">npx skills add fxbin/star-knowledge-base --skill star-first-habit</pre>
-                    </div>
+                <p class="modal-desc">
+                    <code>star-first-habit</code> Skill 让 agent 在需要某个库时优先查 star 知识库，未匹配才走 Google。支持 Claude Code / Cursor / Trae / Codex / OpenCode 等 40+ 工具。
+                </p>
+                <div class="modal-section-title">安装命令</div>
+                <div class="code-block-wrapper">
+                    <button class="copy-button" data-copy-target="skill-cmd">复制</button>
+                    <pre class="code-block" id="skill-cmd">npx skills add fxbin/star-knowledge-base --skill star-first-habit</pre>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 命令面板（⌘K / Ctrl+K） -->
+    <div class="palette-overlay" id="paletteOverlay">
+        <div class="palette" role="dialog" aria-label="命令面板">
+            <input
+                type="text"
+                id="paletteInput"
+                class="palette-input"
+                placeholder="输入命令或搜索项目…"
+                autocomplete="off"
+            >
+            <div class="palette-list" id="paletteList"></div>
         </div>
     </div>
 
@@ -1275,7 +1334,9 @@
         <section class="search-section">
             <div class="search-box">
                 <div class="search-input-wrapper">
-                    <span class="search-icon">⌕</span>
+                    <span class="search-icon" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+                    </span>
                     <input
                         type="text"
                         id="searchInput"
@@ -1283,8 +1344,8 @@
                         placeholder="输入关键词、技术栈、场景（例如：实时聊天、文件上传、ORM）"
                         autocomplete="off"
                     >
+                    <span class="search-kbd" aria-hidden="true">/</span>
                 </div>
-                <button id="searchButton" class="search-button primary">搜索</button>
                 <button id="resetButton" class="search-button">重置</button>
             </div>
 
@@ -1296,60 +1357,37 @@
                     </select>
                 </div>
 
-                <div class="filter-group">
-                    <span class="filter-label">排序</span>
-                    <select id="sortBy" class="filter-select">
-                        <option value="starred_at-desc">最近 star</option>
-                        <option value="stargazers_count-desc">Star 数（高→低）</option>
-                        <option value="stargazers_count-asc">Star 数（低→高）</option>
-                        <option value="quality_score-desc">质量评分（高→低）</option>
-                        <option value="pushed_at-desc">最近更新</option>
-                    </select>
-                </div>
-
                 <div class="stats">
                     <span>筛选 <span class="stats-count" id="statsCount">0</span> 个</span>
                     <span id="pageInfo"></span>
                 </div>
             </div>
             <div class="filter-hint">
-                搜索与筛选对「卡片视图」和「图谱视图」均生效
+                快捷键：/ 聚焦搜索，←/→ 翻页，j/k 选择行，Enter 展开详情，⌘K 命令面板
             </div>
         </section>
 
-        <!-- 视图切换 Tab -->
-        <div class="view-tabs">
-            <button class="view-tab active" id="tabCard">卡片视图</button>
-            <button class="view-tab" id="tabGraph">图谱视图</button>
-        </div>
+        <!-- Topic 分面导航 -->
+        <nav class="facet-nav" id="facetNav" aria-label="按 topic 筛选"></nav>
 
-        <!-- 卡片视图 -->
-        <div id="cardView" class="card-view">
-            <!-- 结果列表 -->
-            <div id="results" class="results"></div>
-            <div id="status" class="status"></div>
-            <div id="pagination" class="pagination" style="display: none;"></div>
+        <!-- 高密度表格视图 -->
+        <div class="table-wrap" id="tableWrap">
+            <table class="repo-table">
+                <thead>
+                    <tr>
+                        <th class="col-name sortable" data-sort="full_name">名称<span class="sort-slot"></span></th>
+                        <th class="col-lang">语言</th>
+                        <th class="col-stars sortable" data-sort="stargazers_count">Stars<span class="sort-slot"></span></th>
+                        <th class="col-score sortable" data-sort="quality_score">评分<span class="sort-slot"></span></th>
+                        <th class="col-topics">Topics</th>
+                        <th class="col-chevron"></th>
+                    </tr>
+                </thead>
+                <tbody id="results"></tbody>
+            </table>
         </div>
-
-        <!-- 图谱视图 -->
-        <div id="graphView" class="graph-view">
-            <div class="graph-toolbar">
-                <div class="graph-info" id="graphInfo">加载中...</div>
-                <div class="graph-toggle-group">
-                    <button class="graph-toggle-btn active" id="graphToggleQuality">仅高质量</button>
-                    <button class="graph-toggle-btn" id="graphToggleAll">显示全部</button>
-                </div>
-            </div>
-            <div class="graph-content">
-                <div class="graph-container">
-                    <div id="graphCanvas"></div>
-                    <div class="graph-legend" id="graphLegend"></div>
-                </div>
-                <div class="graph-detail" id="graphDetail">
-                    <div class="graph-detail-placeholder">点击节点查看项目详情</div>
-                </div>
-            </div>
-        </div>
+        <div id="status" class="status"></div>
+        <div id="pagination" class="pagination" style="display: none;"></div>
     </main>
 
     <!-- 页脚 -->
@@ -1357,49 +1395,57 @@
         <p>由 <a href="https://github.com/fxbin" target="_blank" rel="noopener">fxbin</a> 维护，数据每日由 GitHub Actions 自动同步</p>
     </footer>
 
-    <!-- Cytoscape.js 图谱可视化库（CDN 引入，零构建） -->
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
     <script>
         /**
-         * Star Knowledge Base 前端搜索逻辑
+         * Star Knowledge Base 前端逻辑
          *
          * 设计原则:
          *   - Vanilla JS，零依赖，零构建步骤
          *   - 客户端全量过滤与排序，无需后端
-         *   - data.json 加载后缓存在内存，避免重复请求
+         *   - data.json 加载后缓存在内存与 localStorage，秒开 + 后台静默拉新
+         *   - 高密度表格为唯一主视图，动效只解释状态转换（FLIP / 交叉淡化）
          *
          * author: fxbin
          */
 
-        // 常量定义（禁止魔法值）
-        const DATA_URL = './data.json';
-        const PAGE_SIZE = 20;
-        const MIN_QUERY_LENGTH = 1;
-        const HIGH_SCORE_THRESHOLD = 4;
-        const LOW_SCORE_THRESHOLD = 2;
+        // ========== 常量定义（禁止魔法值） ==========
 
-        // 分页相关常量
-        // 当总页数不超过该阈值时，直接展示全部页码，避免出现仅省略单页的尴尬省略号
+        // 数据与分页
+        const DATA_URL = './data.json';
+        const PAGE_SIZE = 50;
+        const MIN_QUERY_LENGTH = 1;
         const PAGINATION_COMPACT_THRESHOLD = 7;
 
-        // 源码入口按钮的代码图标（自定义 </> 符号，内联 SVG 避免外部依赖）
-        // 用于卡片底部和图谱详情面板的"源码"按钮，语义比"GitHub"品牌名更直观
-        // stroke-width 用 1.8 而非 Feather 默认的 2，让线条更细致，减少默认风
-        const CODE_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>';
+        // 评分分档
+        const HIGH_SCORE_THRESHOLD = 4;
+        const LOW_SCORE_THRESHOLD = 2;
+        const SCORE_DOT_COUNT = 5;
 
-        // 加载优化相关常量
-        // localStorage 缓存 key：用于 stale-while-revalidate 策略，秒开旧数据 + 后台静默拉新
+        // localStorage 缓存 key：stale-while-revalidate 策略，秒开旧数据 + 后台静默拉新
         const DATA_CACHE_KEY = 'skb_data_v1';
-        // 骨架屏占位卡片数量，仅首次无缓存加载时显示
-        const SKELETON_CARD_COUNT = 6;
 
-        // 图谱相关常量
-        const GRAPH_NODE_THRESHOLD = 150;
-        const GRAPH_DEFAULT_MIN_SCORE = 3;
-        const GRAPH_MAX_NODES = 300;
-        const TOPIC_MIN_PROJECTS = 1;
-        const TOPIC_LABEL_MAX_LEN = 12;
-        const PROJECT_LABEL_MAX_LEN = 10;
+        // 骨架屏占位行数与逐行错峰点亮相隔
+        const SKELETON_ROW_COUNT = 8;
+        const SKELETON_STAGGER_MS = 40;
+
+        // 动效参数：FLIP 重排只动 transform，200ms 弹簧感曲线；翻页交叉淡化 120ms
+        const FLIP_DURATION_MS = 200;
+        const FLIP_EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const CROSS_FADE_MS = 120;
+
+        // 分面导航：展示项目数最多的前 N 个 topic，每个项目最多计入 3 个 topic
+        const TOPIC_FACET_MAX = 12;
+        const TOPIC_TAG_PER_ROW = 3;
+        const TOPIC_FACET_PER_ENTRY = 3;
+
+        // 命令面板：项目搜索最多展示条数
+        const PALETTE_RESULT_MAX = 8;
+
+        // 默认排序：最近 star 在前
+        const DEFAULT_SORT_FIELD = 'starred_at';
+        const DEFAULT_SORT_ORDER = 'desc';
+
+        // 语言品牌色（GitHub 惯用色，属数据可视化配色而非 UI token）
         const LANGUAGE_COLORS = {
             Python: '#3776ab',
             JavaScript: '#f7df1e',
@@ -1410,32 +1456,45 @@
             Other: '#a8a29e',
         };
         const DEFAULT_LANGUAGE_COLOR = '#a8a29e';
-        // 图谱节点选中/高亮边框色：与品牌主色 --color-accent 保持一致，
-        // 作为「选中态」信号色（crtoscape 样式无法直接引用 CSS 变量，故显式声明）
-        const GRAPH_SELECTED_COLOR = '#0d9488';
 
-        // 全局状态
+        // 排序方向箭头（内联 SVG，避免字符符号）
+        const SORT_ARROW_ASC = '<svg class="sort-arrow" width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 1.5l3 4.5H1z"/></svg>';
+        const SORT_ARROW_DESC = '<svg class="sort-arrow" width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M4 6.5L1 2h6z"/></svg>';
+
+        // stars 行内图标与展开 chevron（内联 SVG，stroke-width 1.8 减少默认图标感）
+        const STAR_ICON_SVG = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.7 7.7 8.1.1-6.5 4.8 2.4 7.7L12 18.3 5.3 22.8l2.4-7.7-6.5-4.8 8.1-.1z"/></svg>';
+        const CHEVRON_SVG = '<svg class="chevron-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 6 15 12 9 18"></polyline></svg>';
+        const CODE_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>';
+
+        // 是否偏好减弱动效：为 true 时 FLIP / 淡化 / 错峰点亮全部降级为瞬时切换
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // ========== 全局状态 ==========
         const state = {
             allEntries: [],
             filteredEntries: [],
             currentPage: 1,
             languages: new Set(),
             isLoading: false,
-            currentView: 'card',
-            graphInstance: null,
-            graphRendered: false,
-            graphShowAll: false,
+            activeTopic: '',
+            expandedKey: '',
+            selectedIndex: -1,
+            sortField: DEFAULT_SORT_FIELD,
+            sortOrder: DEFAULT_SORT_ORDER,
+            paletteOpen: false,
+            paletteIndex: 0,
+            paletteItems: [],
         };
 
-        // DOM 引用
+        // ========== DOM 引用 ==========
         const dom = {
             searchInput: document.getElementById('searchInput'),
-            searchButton: document.getElementById('searchButton'),
             resetButton: document.getElementById('resetButton'),
             languageFilter: document.getElementById('languageFilter'),
-            sortBy: document.getElementById('sortBy'),
             statsCount: document.getElementById('statsCount'),
             pageInfo: document.getElementById('pageInfo'),
+            facetNav: document.getElementById('facetNav'),
+            tableWrap: document.getElementById('tableWrap'),
             results: document.getElementById('results'),
             status: document.getElementById('status'),
             pagination: document.getElementById('pagination'),
@@ -1445,20 +1504,9 @@
             accessButton: document.getElementById('accessButton'),
             accessModal: document.getElementById('accessModal'),
             modalClose: document.getElementById('modalClose'),
-            tabMcp: document.getElementById('tabMcp'),
-            tabSkill: document.getElementById('tabSkill'),
-            contentMcp: document.getElementById('contentMcp'),
-            contentSkill: document.getElementById('contentSkill'),
-            tabCard: document.getElementById('tabCard'),
-            tabGraph: document.getElementById('tabGraph'),
-            cardView: document.getElementById('cardView'),
-            graphView: document.getElementById('graphView'),
-            graphCanvas: document.getElementById('graphCanvas'),
-            graphLegend: document.getElementById('graphLegend'),
-            graphDetail: document.getElementById('graphDetail'),
-            graphInfo: document.getElementById('graphInfo'),
-            graphToggleQuality: document.getElementById('graphToggleQuality'),
-            graphToggleAll: document.getElementById('graphToggleAll'),
+            paletteOverlay: document.getElementById('paletteOverlay'),
+            paletteInput: document.getElementById('paletteInput'),
+            paletteList: document.getElementById('paletteList'),
         };
 
         /**
@@ -1473,16 +1521,6 @@
         }
 
         /**
-         * 显示加载中状态
-         * @param {string} message - 加载提示
-         */
-        function showLoading(message) {
-            dom.status.innerHTML = '<span class="loading"></span>' + message;
-            dom.status.className = 'status';
-            dom.status.style.display = 'block';
-        }
-
-        /**
          * 加载 data.json
          * 采用 stale-while-revalidate 策略：
          *   - 有本地缓存：立即渲染旧数据秒开，后台静默拉新并更新
@@ -1492,10 +1530,8 @@
         async function loadData() {
             const cached = readDataCache();
             if (cached) {
-                // 有缓存：立即渲染旧数据
                 applyData(cached.data);
                 showStatus('');
-                // 后台静默拉新（不阻塞用户操作）
                 try {
                     const response = await fetch(DATA_URL, { cache: 'default' });
                     if (response.ok) {
@@ -1507,7 +1543,6 @@
                     // 后台拉新失败：保留旧数据，静默忽略
                 }
             } else {
-                // 无缓存：显示骨架屏，等待首次加载
                 showSkeleton();
                 try {
                     const response = await fetch(DATA_URL, { cache: 'default' });
@@ -1541,7 +1576,8 @@
             );
             populateLanguageFilter();
             updateHeaderStats(data);
-            applyFilters();
+            renderFacets();
+            applyFilters({ flip: false });
         }
 
         /**
@@ -1577,25 +1613,31 @@
         }
 
         /**
-         * 显示骨架屏占位卡片
-         * 仅在首次无缓存加载时使用，改善感知加载性能
+         * 显示骨架屏：描出表格各列的真实轮廓，逐行错峰 40ms 点亮
+         * 仅在首次无缓存加载时使用；不转圈
          */
         function showSkeleton() {
-            const skeletonHtml = Array.from({ length: SKELETON_CARD_COUNT }, () =>
-                '<div class="skeleton-card">' +
-                    '<div class="skeleton-line title"></div>' +
-                    '<div class="skeleton-line"></div>' +
-                    '<div class="skeleton-line short"></div>' +
-                    '<div class="skeleton-line meta"></div>' +
-                '</div>'
-            ).join('');
-            dom.results.innerHTML = skeletonHtml;
+            const rows = [];
+            for (let i = 0; i < SKELETON_ROW_COUNT; i++) {
+                rows.push(
+                    `<tr class="skeleton-row">` +
+                        `<td style="--skeleton-delay: ${i * SKELETON_STAGGER_MS}ms"><div class="skeleton-block name"></div></td>` +
+                        `<td style="--skeleton-delay: ${i * SKELETON_STAGGER_MS}ms"><div class="skeleton-block lang"></div></td>` +
+                        `<td style="--skeleton-delay: ${i * SKELETON_STAGGER_MS}ms"><div class="skeleton-block stars"></div></td>` +
+                        `<td style="--skeleton-delay: ${i * SKELETON_STAGGER_MS}ms"><div class="skeleton-block score"></div></td>` +
+                        `<td style="--skeleton-delay: ${i * SKELETON_STAGGER_MS}ms"><div class="skeleton-block topics"></div></td>` +
+                        `<td style="--skeleton-delay: ${i * SKELETON_STAGGER_MS}ms"></td>` +
+                    `</tr>`
+                );
+            }
+            dom.results.innerHTML = rows.join('');
             dom.pagination.style.display = 'none';
             dom.statsCount.textContent = '…';
         }
 
         /**
          * 更新顶部统计信息
+         * @param {Object} data - data.json 解析后的对象
          */
         function updateHeaderStats(data) {
             dom.totalCount.textContent = data.total || state.allEntries.length;
@@ -1622,21 +1664,87 @@
         }
 
         /**
-         * 应用过滤与排序
+         * 统计 topic 分面数据：按项目数降序取前 TOPIC_FACET_MAX 个
+         * 每个分面附带项目数与高质量（评分 >= HIGH_SCORE_THRESHOLD）项目数，用于微条图
+         * @returns {Array<{name: string, count: number, highCount: number}>} 分面列表
          */
-        function applyFilters() {
+        function computeFacets() {
+            const topicMap = new Map();
+            state.allEntries.forEach(entry => {
+                const topics = (entry.topics || []).slice(0, TOPIC_FACET_PER_ENTRY);
+                topics.forEach(topic => {
+                    if (!topicMap.has(topic)) {
+                        topicMap.set(topic, { name: topic, count: 0, highCount: 0 });
+                    }
+                    const facet = topicMap.get(topic);
+                    facet.count++;
+                    if ((entry.quality_score || 0) >= HIGH_SCORE_THRESHOLD) {
+                        facet.highCount++;
+                    }
+                });
+            });
+            return Array.from(topicMap.values())
+                .sort((a, b) => b.count - a.count)
+                .slice(0, TOPIC_FACET_MAX);
+        }
+
+        /**
+         * 渲染 topic 分面导航（含「全部」chip）
+         * 微条图：底条宽度为项目数占比，内层深色段为高质量占比（无画布 small multiples）
+         */
+        function renderFacets() {
+            const facets = computeFacets();
+            const maxCount = facets.length > 0 ? facets[0].count : 1;
+
+            const chips = [];
+            chips.push(
+                `<button class="facet-chip${state.activeTopic === '' ? ' active' : ''}" data-topic="">` +
+                    `<span class="facet-chip-top">` +
+                        `<span class="facet-chip-name">全部</span>` +
+                        `<span class="facet-chip-count">${state.allEntries.length}</span>` +
+                    `</span>` +
+                `</button>`
+            );
+
+            facets.forEach(facet => {
+                const countPct = Math.round((facet.count / maxCount) * 100);
+                const highPct = facet.count > 0 ? Math.round((facet.highCount / facet.count) * 100) : 0;
+                chips.push(
+                    `<button class="facet-chip${state.activeTopic === facet.name ? ' active' : ''}" data-topic="${escapeHtml(facet.name)}">` +
+                        `<span class="facet-chip-top">` +
+                            `<span class="facet-chip-name">${escapeHtml(facet.name)}</span>` +
+                            `<span class="facet-chip-count">${facet.count}</span>` +
+                        `</span>` +
+                        `<span class="facet-bar">` +
+                            `<span class="facet-bar-count" style="width: ${countPct}%">` +
+                                `<span class="facet-bar-high" style="width: ${highPct}%"></span>` +
+                            `</span>` +
+                        `</span>` +
+                    `</button>`
+                );
+            });
+
+            dom.facetNav.innerHTML = chips.join('');
+        }
+
+        /**
+         * 应用过滤与排序
+         * @param {Object} options - { flip: boolean } 是否对重排结果播放 FLIP 动画
+         */
+        function applyFilters(options = { flip: true }) {
             const query = dom.searchInput.value.trim().toLowerCase();
             const language = dom.languageFilter.value;
-            const [sortField, sortOrder] = dom.sortBy.value.split('-');
 
             let filtered = state.allEntries.slice();
 
-            // 语言过滤
+            if (state.activeTopic) {
+                filtered = filtered.filter(entry => (entry.topics || []).includes(state.activeTopic));
+            }
+
             if (language) {
                 filtered = filtered.filter(entry => entry.language === language);
             }
 
-            // 关键词过滤
             if (query.length >= MIN_QUERY_LENGTH) {
                 const tokens = query.split(/\s+/).filter(Boolean);
                 filtered = filtered.filter(entry => {
@@ -1652,10 +1760,13 @@
                 });
             }
 
-            // 排序
+            const sortField = state.sortField;
+            const sortOrder = state.sortOrder;
             filtered.sort((a, b) => {
                 let valueA = a[sortField];
                 let valueB = b[sortField];
+                if (valueA == null) return 1;
+                if (valueB == null) return -1;
                 if (typeof valueA === 'string') {
                     valueA = valueA.toLowerCase();
                     valueB = valueB.toLowerCase();
@@ -1667,16 +1778,18 @@
 
             state.filteredEntries = filtered;
             state.currentPage = 1;
-            renderResults();
-            if (state.currentView === 'graph') {
-                renderGraph();
-            }
+            state.selectedIndex = -1;
+            state.expandedKey = '';
+            renderResults({ flip: options.flip });
         }
 
         /**
-         * 渲染结果列表
+         * 渲染结果表格（当前页切片）
+         * @param {Object} options - { flip: boolean, fade: boolean }
+         *   flip 为 true 时对继续存在的行播放 FLIP 位移动画（过滤/排序场景）；
+         *   fade 为 true 时整表 120ms 淡入（翻页场景）
          */
-        function renderResults() {
+        function renderResults(options = {}) {
             const total = state.filteredEntries.length;
             const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
             if (state.currentPage > totalPages) {
@@ -1689,6 +1802,8 @@
             dom.statsCount.textContent = total;
             dom.pageInfo.textContent = total > 0 ? `，第 ${state.currentPage}/${totalPages} 页` : '';
 
+            updateSortIndicators();
+
             if (total === 0) {
                 dom.results.innerHTML = '';
                 showStatus('没有匹配的项目。试试其他关键词或重置过滤条件。');
@@ -1697,13 +1812,204 @@
             }
 
             showStatus('');
-            dom.results.innerHTML = pageEntries.map(entryToHtml).join('');
+
+            const maxStars = pageEntries.reduce(
+                (max, entry) => Math.max(max, entry.stargazers_count || 0),
+                1
+            );
+
+            const shouldFlip = options.flip && !prefersReducedMotion;
+            const oldPositions = shouldFlip ? captureRowPositions() : null;
+
+            dom.results.innerHTML = pageEntries
+                .map(entry => entryToRowHtml(entry, maxStars))
+                .join('');
+
+            if (shouldFlip) {
+                playFlipAnimation(oldPositions);
+            }
+
+            if (options.fade && !prefersReducedMotion) {
+                dom.tableWrap.classList.add('fading');
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        dom.tableWrap.classList.remove('fading');
+                    });
+                });
+            }
+
             renderPagination(totalPages);
+        }
+
+        /**
+         * 捕获当前表格数据行的垂直位置（FLIP 的 First 步骤）
+         * @returns {Map<string, number>} 行 key 到 viewport top 的映射
+         */
+        function captureRowPositions() {
+            const positions = new Map();
+            dom.results.querySelectorAll('tr.data-row').forEach(row => {
+                positions.set(row.dataset.key, row.getBoundingClientRect().top);
+            });
+            return positions;
+        }
+
+        /**
+         * 播放 FLIP 重排动画（Last / Invert / Play 步骤）
+         * 只对新旧渲染都存在的行生效；只动 transform，不触发后续 layout
+         * @param {Map<string, number>} oldPositions - 渲染前的行位置映射
+         */
+        function playFlipAnimation(oldPositions) {
+            const rows = dom.results.querySelectorAll('tr.data-row');
+            rows.forEach(row => {
+                const oldTop = oldPositions.get(row.dataset.key);
+                if (oldTop == null) return;
+                const deltaY = oldTop - row.getBoundingClientRect().top;
+                if (deltaY === 0) return;
+                row.style.transition = 'none';
+                row.style.transform = `translateY(${deltaY}px)`;
+            });
+            // 强制一次 reflow，让 invert 位移先生效，再统一播放归位
+            dom.results.offsetHeight;
+            rows.forEach(row => {
+                if (!row.style.transform) return;
+                row.style.transition = `transform ${FLIP_DURATION_MS}ms ${FLIP_EASING}`;
+                row.style.transform = '';
+            });
+        }
+
+        /**
+         * 更新表头排序指示（高亮当前排序列 + 方向箭头）
+         */
+        function updateSortIndicators() {
+            dom.tableWrap.querySelectorAll('thead th.sortable').forEach(th => {
+                const slot = th.querySelector('.sort-slot');
+                if (th.dataset.sort === state.sortField) {
+                    th.classList.add('sorted');
+                    slot.innerHTML = state.sortOrder === 'asc' ? SORT_ARROW_ASC : SORT_ARROW_DESC;
+                } else {
+                    th.classList.remove('sorted');
+                    slot.innerHTML = '';
+                }
+            });
+        }
+
+        /**
+         * 把单个 entry 渲染为表格行 HTML
+         * @param {Object} entry - 项目数据
+         * @param {number} maxStars - 当前页最大 star 数（微条归一化基准）
+         * @returns {string} 行 HTML
+         */
+        function entryToRowHtml(entry, maxStars) {
+            const score = Math.round(entry.quality_score || 0);
+            const scoreClass = score >= HIGH_SCORE_THRESHOLD ? 'high'
+                : score >= LOW_SCORE_THRESHOLD ? 'mid'
+                : 'low';
+
+            const stars = entry.stargazers_count || 0;
+            const starsPct = Math.max(Math.round((stars / maxStars) * 100), 2);
+
+            const topics = (entry.topics || []).slice(0, TOPIC_TAG_PER_ROW);
+            const moreCount = (entry.topics || []).length - topics.length;
+
+            const dots = [];
+            for (let i = 0; i < SCORE_DOT_COUNT; i++) {
+                dots.push(`<span class="score-dot${i < score ? ' filled' : ''}"></span>`);
+            }
+
+            return (
+                `<tr class="data-row" data-key="${escapeHtml(entry.full_name)}" tabindex="0">` +
+                    `<td><span class="cell-name">` +
+                        `<a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">${escapeHtml(entry.full_name)}</a>` +
+                        `<span class="cell-desc">${escapeHtml(entry.description || '')}</span>` +
+                    `</span></td>` +
+                    `<td>${entry.language
+                        ? `<span class="cell-lang"><span class="lang-dot" style="background-color: ${getLanguageColor(entry.language)}"></span>${escapeHtml(entry.language)}</span>`
+                        : ''}</td>` +
+                    `<td><span class="cell-stars">` +
+                        `<span class="stars-icon">${STAR_ICON_SVG}</span>` +
+                        `<span class="cell-stars-num">${stars}</span>` +
+                        `<span class="stars-bar"><span class="stars-bar-fill" style="width: ${starsPct}%"></span></span>` +
+                    `</span></td>` +
+                    `<td><span class="cell-score">` +
+                        `<span class="score-dots ${scoreClass}">${dots.join('')}</span>` +
+                        `<span class="cell-score-num">${score}/${SCORE_DOT_COUNT}</span>` +
+                    `</span></td>` +
+                    `<td><span class="cell-topics">` +
+                        topics.map(topic => `<span class="tag">${escapeHtml(topic)}</span>`).join('') +
+                        (moreCount > 0 ? `<span class="tag-more">+${moreCount}</span>` : '') +
+                    `</span></td>` +
+                    `<td class="cell-chevron">${CHEVRON_SVG}</td>` +
+                `</tr>`
+            );
+        }
+
+        /**
+         * 渲染某行的展开详情行（插入在数据行之后）
+         * @param {Object} entry - 项目数据
+         * @returns {string} 详情行 HTML
+         */
+        function detailRowHtml(entry) {
+            const topics = (entry.topics || [])
+                .map(topic => `<span class="tag">${escapeHtml(topic)}</span>`)
+                .join('');
+            const useCases = (entry.use_cases || [])
+                .map(useCase => `<span class="tag use-case">${escapeHtml(useCase)}</span>`)
+                .join('');
+
+            const summaryBlock = entry.summary
+                ? `<div class="detail-summary"><div class="detail-summary-label">摘要</div>${escapeHtml(entry.summary)}</div>`
+                : '';
+
+            return (
+                `<tr class="detail-row"><td colspan="6"><div class="detail-inner">` +
+                    `<p class="detail-desc">${escapeHtml(entry.description || '（无描述）')}</p>` +
+                    summaryBlock +
+                    `<div class="detail-meta">` +
+                        (entry.language ? `<span>${escapeHtml(entry.language)}</span>` : '') +
+                        `<span>star ${entry.stargazers_count || 0}</span>` +
+                        `<span>fork ${entry.forks_count || 0}</span>` +
+                        `<span>更新 ${formatDate(entry.pushed_at)}</span>` +
+                        `<span>starred ${formatDate(entry.starred_at)}</span>` +
+                    `</div>` +
+                    (topics ? `<div class="detail-tags">${topics}${useCases}</div>` : (useCases ? `<div class="detail-tags">${useCases}</div>` : '')) +
+                    `<div class="detail-actions">` +
+                        `<a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">${CODE_ICON_SVG}源码</a>` +
+                        `<a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>` +
+                        `<a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>` +
+                    `</div>` +
+                `</div></td></tr>`
+            );
+        }
+
+        /**
+         * 切换某行的展开/收起状态（同时只允许一行展开）
+         * @param {string} key - 项目 full_name
+         */
+        function toggleExpand(key) {
+            const entry = state.filteredEntries.find(item => item.full_name === key);
+            if (!entry) return;
+
+            const existingDetail = dom.results.querySelector('tr.detail-row');
+            const previousExpanded = dom.results.querySelector('tr.data-row.expanded');
+            if (existingDetail) existingDetail.remove();
+            if (previousExpanded) previousExpanded.classList.remove('expanded');
+
+            if (state.expandedKey === key) {
+                state.expandedKey = '';
+                return;
+            }
+
+            state.expandedKey = key;
+            const row = dom.results.querySelector(`tr.data-row[data-key="${cssEscape(key)}"]`);
+            if (!row) return;
+            row.classList.add('expanded');
+            row.insertAdjacentHTML('afterend', detailRowHtml(entry));
         }
 
         /**
          * 渲染分页控件
          * 布局：上一页 | 首页 | … | 当前页±2 | … | 末页 | 下一页 | 页码信息
+         * @param {number} totalPages - 总页数
          */
         function renderPagination(totalPages) {
             if (totalPages <= 1) {
@@ -1715,25 +2021,14 @@
 
             const current = state.currentPage;
 
-            // 跳转到指定页的统一处理函数
-            const goToPage = (page) => {
-                state.currentPage = page;
-                renderResults();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-
-            // 上一页按钮
             const prevButton = document.createElement('button');
             prevButton.textContent = '←';
             prevButton.className = 'nav-btn';
-            prevButton.title = '上一页';
+            prevButton.title = '上一页（←）';
             prevButton.disabled = current === 1;
             prevButton.addEventListener('click', () => goToPage(current - 1));
             dom.pagination.appendChild(prevButton);
 
-            // 计算需要显示的页码集合
-            // 显示规则：首页 + 当前页前 2 页 + 当前页 + 当前页后 2 页 + 末页
-            // 相邻处用省略号填充
             const pageItems = buildPageItems(current, totalPages);
             pageItems.forEach((item) => {
                 if (item === '...') {
@@ -1753,16 +2048,14 @@
                 }
             });
 
-            // 下一页按钮
             const nextButton = document.createElement('button');
             nextButton.textContent = '→';
             nextButton.className = 'nav-btn';
-            nextButton.title = '下一页';
+            nextButton.title = '下一页（→）';
             nextButton.disabled = current === totalPages;
             nextButton.addEventListener('click', () => goToPage(current + 1));
             dom.pagination.appendChild(nextButton);
 
-            // 页码信息（用于辅助定位）
             const pageInfo = document.createElement('span');
             pageInfo.className = 'pagination-info';
             pageInfo.textContent = `${current} / ${totalPages}`;
@@ -1771,13 +2064,13 @@
 
         /**
          * 构建分页页码展示序列
-         * 返回数组，元素为数字页码或字符串 '...' 表示省略号
-         * 规则：始终包含首页与末页；当前页前后各保留 2 页；中间用省略号衔接
-         * 当总页数较少（不超过 PAGINATION_COMPACT_THRESHOLD）时直接展示全部页码，
-         * 避免出现仅省略单个页码的尴尬情况
+         * 规则：始终包含首页与末页；当前页前后各保留 2 页；中间用省略号衔接；
+         * 总页数不超过 PAGINATION_COMPACT_THRESHOLD 时直接展示全部页码
+         * @param {number} current - 当前页
+         * @param {number} total - 总页数
+         * @returns {Array<number|string>} 页码或 '...' 序列
          */
         function buildPageItems(current, total) {
-            // 总页数较少时直接全部展示
             if (total <= PAGINATION_COMPACT_THRESHOLD) {
                 const all = [];
                 for (let i = 1; i <= total; i++) all.push(i);
@@ -1793,7 +2086,6 @@
                 if (i === 1 || i === total || (i >= left && i <= right)) {
                     items.push(i);
                 } else if (items[items.length - 1] !== '...') {
-                    // 仅在尚未添加省略号时插入，避免连续省略号
                     items.push('...');
                 }
             }
@@ -1801,63 +2093,22 @@
         }
 
         /**
-         * 把单个 entry 渲染为卡片 HTML
+         * 跳转到指定页（整表 120ms 交叉淡化，不用位移，保护位置记忆）
+         * @param {number} page - 目标页码
          */
-        function entryToHtml(entry) {
-            const scoreClass = entry.quality_score >= HIGH_SCORE_THRESHOLD ? 'high'
-                : entry.quality_score >= LOW_SCORE_THRESHOLD ? 'mid'
-                : 'low';
-            const scoreLabel = `质量 ${entry.quality_score}/5`;
-
-            const topics = (entry.topics || [])
-                .slice(0, 10)
-                .map(topic => `<span class="tag">${escapeHtml(topic)}</span>`)
-                .join('');
-
-            const useCases = (entry.use_cases || [])
-                .slice(0, 5)
-                .map(useCase => `<span class="tag use-case">${escapeHtml(useCase)}</span>`)
-                .join('');
-
-            const summaryBlock = entry.summary
-                ? `<div class="card-summary">
-                       <div class="card-summary-label">摘要</div>
-                       ${escapeHtml(entry.summary)}
-                   </div>`
-                : '';
-
-            return `
-                <article class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener" title="查看源码目录">
-                                ${escapeHtml(entry.full_name)}
-                            </a>
-                        </div>
-                        <span class="card-score ${scoreClass}">${scoreLabel}</span>
-                    </div>
-                    <p class="card-description">${escapeHtml(entry.description || '（无描述）')}</p>
-                    ${summaryBlock}
-                    <div class="card-meta">
-                        ${entry.language ? `<span class="card-meta-item">${escapeHtml(entry.language)}</span>` : ''}
-                        <span class="card-meta-item">★ ${entry.stargazers_count || 0}</span>
-                        <span class="card-meta-item">⑂ ${entry.forks_count || 0}</span>
-                        <span class="card-meta-item">更新 ${formatDate(entry.pushed_at)}</span>
-                        <span class="card-meta-item">starred ${formatDate(entry.starred_at)}</span>
-                    </div>
-                    ${topics ? `<div class="card-tags">${topics}</div>` : ''}
-                    ${useCases ? `<div class="card-tags">${useCases}</div>` : ''}
-                    <div class="card-actions">
-                        <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener" title="查看源码目录">${CODE_ICON_SVG}源码</a>
-                        <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
-                        <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
-                    </div>
-                </article>
-            `;
+        function goToPage(page) {
+            const totalPages = Math.ceil(state.filteredEntries.length / PAGE_SIZE) || 1;
+            if (page < 1 || page > totalPages || page === state.currentPage) return;
+            state.currentPage = page;
+            state.selectedIndex = -1;
+            state.expandedKey = '';
+            renderResults({ fade: true });
         }
 
         /**
          * HTML 转义，防止 XSS
+         * @param {string} text - 原始文本
+         * @returns {string} 转义后的文本
          */
         function escapeHtml(text) {
             if (text == null) return '';
@@ -1867,7 +2118,19 @@
         }
 
         /**
+         * CSS 选择器转义（用于 querySelector 中的 data-key 匹配）
+         * @param {string} text - 原始文本
+         * @returns {string} 转义后的文本
+         */
+        function cssEscape(text) {
+            if (window.CSS && CSS.escape) return CSS.escape(text);
+            return String(text).replace(/"/g, '\\"');
+        }
+
+        /**
          * 日期格式化
+         * @param {string} isoString - ISO 日期字符串
+         * @returns {string} 本地化日期或占位文本
          */
         function formatDate(isoString) {
             if (!isoString) return '未知';
@@ -1889,382 +2152,7 @@
             return LANGUAGE_COLORS[language] || DEFAULT_LANGUAGE_COLOR;
         }
 
-        /**
-         * 截断文本到指定长度，超出部分用省略号替代
-         * @param {string} text - 原始文本
-         * @param {number} maxLen - 最大长度
-         * @returns {string} 截断后的文本
-         */
-        function truncateText(text, maxLen) {
-            if (!text || text.length <= maxLen) return text || '';
-            return text.substring(0, maxLen) + '…';
-        }
-
-        /**
-         * 从过滤后的项目列表构建图谱数据（二部图：topic 节点 + 项目节点）
-         *
-         * 聚类规则:
-         *   - 有 topics 的项目：每个 topic 作为聚类中心
-         *   - 无 topics 但有 language 的项目：language 作为聚类中心
-         *   - 都无的项目：归入"其他"聚类
-         *
-         * 性能策略:
-         *   - 默认只渲染质量分 >= GRAPH_DEFAULT_MIN_SCORE 的项目
-         *   - 若结果仍超过 GRAPH_MAX_NODES，按质量分降序截断
-         *   - graphShowAll=true 时渲染全部（用户点击"显示全部"后）
-         *
-         * @returns {{nodes: Array, edges: Array, total: number, displayed: number}} 图谱数据
-         */
-        function buildGraphData() {
-            let entries = state.filteredEntries;
-            const total = entries.length;
-
-            if (!state.graphShowAll) {
-                const filtered = entries.filter(e => (e.quality_score || 0) >= GRAPH_DEFAULT_MIN_SCORE);
-                entries = filtered.length > 0 ? filtered : entries.slice(0, GRAPH_MAX_NODES);
-                if (entries.length > GRAPH_MAX_NODES) {
-                    entries = entries.slice().sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0)).slice(0, GRAPH_MAX_NODES);
-                }
-            }
-
-            const topicMap = new Map();
-            const projectNodes = [];
-            const edges = [];
-
-            entries.forEach((entry, index) => {
-                const projectId = `p${index}`;
-                const projectLabel = truncateText(
-                    (entry.full_name || '').split('/').pop() || entry.full_name || '',
-                    PROJECT_LABEL_MAX_LEN
-                );
-                projectNodes.push({
-                    data: {
-                        id: projectId,
-                        label: projectLabel,
-                        type: 'project',
-                        entry: entry,
-                        color: getLanguageColor(entry.language),
-                        size: 20,
-                    }
-                });
-
-                const clusters = getProjectClusters(entry);
-                clusters.forEach(clusterName => {
-                    const topicId = `t_${clusterName}`;
-                    if (!topicMap.has(topicId)) {
-                        topicMap.set(topicId, {
-                            data: {
-                                id: topicId,
-                                label: truncateText(clusterName, TOPIC_LABEL_MAX_LEN),
-                                type: 'topic',
-                                topicName: clusterName,
-                                projectCount: 0,
-                                color: '#1c1917',
-                                size: 30,
-                            }
-                        });
-                    }
-                    topicMap.get(topicId).data.projectCount++;
-                    edges.push({
-                        data: {
-                            id: `e_${projectId}_${topicId}`,
-                            source: topicId,
-                            target: projectId,
-                        }
-                    });
-                });
-            });
-
-            const topicNodes = Array.from(topicMap.values()).map(node => {
-                node.data.size = 25 + Math.min(node.data.projectCount * 3, 30);
-                return node;
-            });
-
-            return {
-                nodes: [...topicNodes, ...projectNodes],
-                edges: edges,
-                total: total,
-                displayed: entries.length,
-            };
-        }
-
-        /**
-         * 获取项目的聚类标签列表（topics 优先，language 兜底，都无则"其他"）
-         * @param {Object} entry - 项目数据
-         * @returns {string[]} 聚类标签列表
-         */
-        function getProjectClusters(entry) {
-            const topics = entry.topics || [];
-            if (topics.length > 0) {
-                return topics.slice(0, 3);
-            }
-            if (entry.language) {
-                return [entry.language];
-            }
-            return ['其他'];
-        }
-
-        /**
-         * 渲染图谱视图（Cytoscape.js 力导向二部图）
-         *
-         * 性能策略:
-         *   - 节点数超过 GRAPH_NODE_THRESHOLD 时关闭布局动画
-         *   - 使用 cose 布局算法（力导向）
-         *   - canvas 渲染，避免 SVG DOM 性能瓶颈
-         */
-        function renderGraph() {
-            if (state.filteredEntries.length === 0) {
-                dom.graphCanvas.innerHTML = '';
-                dom.graphInfo.textContent = '没有匹配的项目';
-                renderGraphDetail(null);
-                renderGraphLegend([]);
-                return;
-            }
-
-            const graphData = buildGraphData();
-            const animate = graphData.nodes.length <= GRAPH_NODE_THRESHOLD;
-
-            dom.graphInfo.innerHTML = `显示 <strong>${graphData.displayed}</strong> / ${graphData.total} 个项目，<strong>${graphData.nodes.length}</strong> 个节点`;
-
-            if (state.graphInstance) {
-                state.graphInstance.destroy();
-                state.graphInstance = null;
-            }
-
-            state.graphInstance = cytoscape({
-                container: dom.graphCanvas,
-                elements: [...graphData.nodes, ...graphData.edges],
-                style: [
-                    {
-                        selector: 'node[type = "topic"]',
-                        style: {
-                            'background-color': '#1c1917',
-                            'label': 'data(label)',
-                            'color': '#1c1917',
-                            'font-size': '11px',
-                            'font-weight': '600',
-                            'text-valign': 'bottom',
-                            'text-margin-y': 6,
-                            'width': 'data(size)',
-                            'height': 'data(size)',
-                            'border-width': 2,
-                            'border-color': '#d4d4d2',
-                        }
-                    },
-                    {
-                        selector: 'node[type = "project"]',
-                        style: {
-                            'background-color': 'data(color)',
-                            'label': 'data(label)',
-                            'color': '#57534e',
-                            'font-size': '9px',
-                            'text-valign': 'bottom',
-                            'text-margin-y': 4,
-                            'width': 'data(size)',
-                            'height': 'data(size)',
-                            'border-width': 1,
-                            'border-color': '#e5e5e4',
-                        }
-                    },
-                    {
-                        selector: 'edge',
-                        style: {
-                            'width': 1,
-                            'line-color': '#d4d4d2',
-                            'opacity': 0.3,
-                            'curve-style': 'bezier',
-                            'target-arrow-shape': 'none',
-                        }
-                    },
-                    {
-                        selector: 'node[type = "topic"]:selected',
-                        style: {
-                            'border-color': GRAPH_SELECTED_COLOR,
-                            'border-width': 3,
-                        }
-                    },
-                    {
-                        selector: 'node[type = "project"]:selected',
-                        style: {
-                            'border-color': GRAPH_SELECTED_COLOR,
-                            'border-width': 3,
-                        }
-                    },
-                    {
-                        selector: '.faded',
-                        style: {
-                            'opacity': 0.15,
-                        }
-                    },
-                    {
-                        selector: '.highlighted',
-                        style: {
-                            'opacity': 1,
-                            'border-color': GRAPH_SELECTED_COLOR,
-                            'border-width': 2,
-                        }
-                    },
-                ],
-                layout: {
-                    name: 'cose',
-                    animate: animate,
-                    animationDuration: 500,
-                    nodeRepulsion: 8000,
-                    idealEdgeLength: 60,
-                    edgeElasticity: 0.45,
-                    gravity: 0.25,
-                    numIter: 1500,
-                    fit: true,
-                    padding: 30,
-                    randomize: true,
-                },
-            });
-
-            bindGraphEvents();
-            renderGraphLegend(getTopLanguages());
-            state.graphRendered = true;
-        }
-
-        /**
-         * 绑定图谱交互事件
-         *
-         * 交互:
-         *   - 悬停项目节点：高亮该节点 + 关联边 + 相邻 topic，其余变淡
-         *   - 点击项目节点：右侧详情面板显示项目信息
-         *   - 点击 topic 节点：过滤为该 topic 下的项目
-         *   - 双击空白：重置视图
-         */
-        function bindGraphEvents() {
-            state.graphInstance.on('mouseover', 'node[type = "project"]', (event) => {
-                const node = event.target;
-                const connected = node.connectedEdges().connectedNodes().union(node.connectedEdges());
-                state.graphInstance.elements().addClass('faded');
-                connected.removeClass('faded').addClass('highlighted');
-                node.removeClass('faded');
-            });
-
-            state.graphInstance.on('mouseout', 'node[type = "project"]', () => {
-                state.graphInstance.elements().removeClass('faded highlighted');
-            });
-
-            state.graphInstance.on('tap', 'node[type = "project"]', (event) => {
-                const node = event.target;
-                const entry = node.data('entry');
-                renderGraphDetail(entry);
-            });
-
-            state.graphInstance.on('tap', 'node[type = "topic"]', (event) => {
-                const node = event.target;
-                const topicName = node.data('topicName');
-                dom.searchInput.value = topicName;
-                applyFilters();
-            });
-
-            state.graphInstance.on('dblclick', (event) => {
-                if (event.target === state.graphInstance) {
-                    state.graphInstance.animate({ fit: { eles: state.graphInstance.elements(), padding: 30 } });
-                }
-            });
-        }
-
-        /**
-         * 获取过滤结果中出现频率最高的前 6 种语言
-         * @returns {Array<{language: string, color: string}>} 语言和颜色列表
-         */
-        function getTopLanguages() {
-            const langCount = new Map();
-            state.filteredEntries.forEach(entry => {
-                const lang = entry.language || 'Other';
-                langCount.set(lang, (langCount.get(lang) || 0) + 1);
-            });
-            return Array.from(langCount.entries())
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 6)
-                .map(([lang]) => ({
-                    language: lang,
-                    color: getLanguageColor(lang),
-                }));
-        }
-
-        /**
-         * 渲染图谱图例（语言颜色说明）
-         * @param {Array<{language: string, color: string}>} legends - 图例数据
-         */
-        function renderGraphLegend(legends) {
-            if (legends.length === 0) {
-                dom.graphLegend.innerHTML = '';
-                dom.graphLegend.style.display = 'none';
-                return;
-            }
-            dom.graphLegend.style.display = 'flex';
-            dom.graphLegend.innerHTML = legends.map(item =>
-                `<div class="graph-legend-item">
-                    <span class="graph-legend-dot" style="background-color: ${item.color}"></span>
-                    <span>${escapeHtml(item.language)}</span>
-                </div>`
-            ).join('');
-        }
-
-        /**
-         * 在右侧详情面板渲染项目详情
-         * @param {Object|null} entry - 项目数据，null 时显示占位提示
-         */
-        function renderGraphDetail(entry) {
-            if (!entry) {
-                dom.graphDetail.innerHTML = '<div class="graph-detail-placeholder">点击节点查看项目详情</div>';
-                return;
-            }
-
-            const scoreClass = entry.quality_score >= HIGH_SCORE_THRESHOLD ? 'high'
-                : entry.quality_score >= LOW_SCORE_THRESHOLD ? 'mid'
-                : 'low';
-
-            const topics = (entry.topics || [])
-                .slice(0, 8)
-                .map(topic => `<span class="tag">${escapeHtml(topic)}</span>`)
-                .join('');
-
-            dom.graphDetail.innerHTML = `
-                <div class="graph-detail-title">
-                    <a href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener">
-                        ${escapeHtml(entry.full_name)}
-                    </a>
-                </div>
-                <p class="graph-detail-desc">${escapeHtml(entry.description || '（无描述）')}</p>
-                <div class="graph-detail-meta">
-                    ${entry.language ? `<span>${escapeHtml(entry.language)}</span>` : ''}
-                    <span>★ ${entry.stargazers_count || 0}</span>
-                    <span>⑂ ${entry.forks_count || 0}</span>
-                    <span class="card-score ${scoreClass}" style="font-size: 0.7rem;">质量 ${entry.quality_score}/5</span>
-                </div>
-                ${topics ? `<div class="graph-detail-tags">${topics}</div>` : ''}
-                <div class="graph-detail-actions">
-                    <a class="action-button" href="${escapeHtml(entry.html_url)}" target="_blank" rel="noopener" title="查看源码目录">${CODE_ICON_SVG}源码</a>
-                    <a class="action-button deepwiki" href="${escapeHtml(entry.deepwiki_url)}" target="_blank" rel="noopener">DeepWiki</a>
-                    <a class="action-button zread" href="${escapeHtml(entry.zread_url)}" target="_blank" rel="noopener">Zread</a>
-                </div>
-            `;
-        }
-
-        /**
-         * 切换视图（卡片 / 图谱）
-         * @param {string} view - 视图名称：'card' 或 'graph'
-         */
-        function switchView(view) {
-            state.currentView = view;
-            if (view === 'card') {
-                dom.tabCard.classList.add('active');
-                dom.tabGraph.classList.remove('active');
-                dom.cardView.style.display = '';
-                dom.graphView.classList.remove('active');
-            } else {
-                dom.tabGraph.classList.add('active');
-                dom.tabCard.classList.remove('active');
-                dom.cardView.style.display = 'none';
-                dom.graphView.classList.add('active');
-                renderGraph();
-            }
-        }
+        // ========== 接入说明 Modal ==========
 
         /**
          * 打开接入说明 Modal
@@ -2280,18 +2168,6 @@
         function closeAccessModal() {
             dom.accessModal.classList.remove('active');
             document.body.style.overflow = '';
-        }
-
-        /**
-         * 切换接入说明 Modal 的 tab（MCP / Skill）
-         * @param {string} tab - 'mcp' 或 'skill'
-         */
-        function switchAccessTab(tab) {
-            const isMcp = tab === 'mcp';
-            dom.tabMcp.classList.toggle('active', isMcp);
-            dom.tabSkill.classList.toggle('active', !isMcp);
-            dom.contentMcp.classList.toggle('active', isMcp);
-            dom.contentSkill.classList.toggle('active', !isMcp);
         }
 
         /**
@@ -2339,62 +2215,427 @@
             }
         }
 
-        // 事件绑定
-        dom.searchButton.addEventListener('click', applyFilters);
-        dom.tabCard.addEventListener('click', () => switchView('card'));
-        dom.tabGraph.addEventListener('click', () => switchView('graph'));
+        // ========== 命令面板（⌘K） ==========
 
-        // 接入说明 Modal 交互
-        dom.accessButton.addEventListener('click', () => openAccessModal());
-        dom.modalClose.addEventListener('click', () => closeAccessModal());
-        // 点击遮罩关闭
-        dom.accessModal.addEventListener('click', (event) => {
-            if (event.target === dom.accessModal) closeAccessModal();
-        });
-        // ESC 关闭
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && dom.accessModal.classList.contains('active')) {
-                closeAccessModal();
+        /**
+         * 构建命令面板的静态命令列表
+         * 命令随当前过滤状态动态裁剪（如无激活 topic 则不显示「清除 topic」）
+         * @returns {Array<{id: string, title: string, hint: string, action: Function}>} 命令列表
+         */
+        function buildPaletteCommands() {
+            const commands = [];
+
+            const hasFilters = dom.searchInput.value.trim() !== ''
+                || dom.languageFilter.value !== ''
+                || state.activeTopic !== ''
+                || state.sortField !== DEFAULT_SORT_FIELD;
+            if (hasFilters) {
+                commands.push({
+                    id: 'reset-all',
+                    title: '重置全部过滤与排序',
+                    hint: '',
+                    action: resetAll,
+                });
             }
-        });
-        // Tab 切换
-        dom.tabMcp.addEventListener('click', () => switchAccessTab('mcp'));
-        dom.tabSkill.addEventListener('click', () => switchAccessTab('skill'));
-        // 复制按钮（事件委托，避免给每个按钮单独绑定）
-        document.querySelectorAll('.copy-button').forEach(btn => {
-            btn.addEventListener('click', () => copyCodeBlock(btn));
-        });
-        dom.graphToggleQuality.addEventListener('click', () => {
-            state.graphShowAll = false;
-            dom.graphToggleQuality.classList.add('active');
-            dom.graphToggleAll.classList.remove('active');
-            renderGraph();
-        });
-        dom.graphToggleAll.addEventListener('click', () => {
-            state.graphShowAll = true;
-            dom.graphToggleAll.classList.add('active');
-            dom.graphToggleQuality.classList.remove('active');
-            renderGraph();
-        });
-        dom.resetButton.addEventListener('click', () => {
+
+            if (state.activeTopic) {
+                commands.push({
+                    id: 'clear-topic',
+                    title: `清除 topic 筛选（${state.activeTopic}）`,
+                    hint: '',
+                    action: () => {
+                        state.activeTopic = '';
+                        renderFacets();
+                        applyFilters();
+                    },
+                });
+            }
+
+            commands.push({
+                id: 'sort-starred',
+                title: '排序：最近 star',
+                hint: state.sortField === 'starred_at' ? '当前' : '',
+                action: () => setSort('starred_at', 'desc'),
+            });
+            commands.push({
+                id: 'sort-stars',
+                title: '排序：Star 数（高→低）',
+                hint: state.sortField === 'stargazers_count' ? '当前' : '',
+                action: () => setSort('stargazers_count', 'desc'),
+            });
+            commands.push({
+                id: 'sort-score',
+                title: '排序：质量评分（高→低）',
+                hint: state.sortField === 'quality_score' ? '当前' : '',
+                action: () => setSort('quality_score', 'desc'),
+            });
+            commands.push({
+                id: 'sort-pushed',
+                title: '排序：最近更新',
+                hint: state.sortField === 'pushed_at' ? '当前' : '',
+                action: () => setSort('pushed_at', 'desc'),
+            });
+
+            const totalPages = Math.ceil(state.filteredEntries.length / PAGE_SIZE) || 1;
+            if (state.currentPage < totalPages) {
+                commands.push({
+                    id: 'next-page',
+                    title: '下一页',
+                    hint: '→',
+                    action: () => goToPage(state.currentPage + 1),
+                });
+            }
+            if (state.currentPage > 1) {
+                commands.push({
+                    id: 'prev-page',
+                    title: '上一页',
+                    hint: '←',
+                    action: () => goToPage(state.currentPage - 1),
+                });
+            }
+
+            commands.push({
+                id: 'open-access',
+                title: '打开接入说明',
+                hint: '',
+                action: openAccessModal,
+            });
+
+            return commands;
+        }
+
+        /**
+         * 设置排序字段与方向并重新过滤
+         * @param {string} field - 排序字段
+         * @param {string} order - 'asc' 或 'desc'
+         */
+        function setSort(field, order) {
+            state.sortField = field;
+            state.sortOrder = order;
+            applyFilters();
+        }
+
+        /**
+         * 重置全部过滤与排序到默认状态
+         */
+        function resetAll() {
             dom.searchInput.value = '';
             dom.languageFilter.value = '';
-            dom.sortBy.value = 'starred_at-desc';
+            state.activeTopic = '';
+            state.sortField = DEFAULT_SORT_FIELD;
+            state.sortOrder = DEFAULT_SORT_ORDER;
+            renderFacets();
+            applyFilters({ flip: false });
+        }
+
+        /**
+         * 打开命令面板
+         */
+        function openPalette() {
+            state.paletteOpen = true;
+            dom.paletteOverlay.classList.add('active');
+            dom.paletteInput.value = '';
+            renderPaletteList('');
+            dom.paletteInput.focus();
+        }
+
+        /**
+         * 关闭命令面板
+         */
+        function closePalette() {
+            state.paletteOpen = false;
+            dom.paletteOverlay.classList.remove('active');
+            dom.searchInput.focus();
+        }
+
+        /**
+         * 切换命令面板开关
+         */
+        function togglePalette() {
+            if (state.paletteOpen) {
+                closePalette();
+            } else {
+                openPalette();
+            }
+        }
+
+        /**
+         * 渲染命令面板列表
+         * 输入为空：展示全部静态命令；输入非空：命令模糊匹配在上，项目搜索结果在下
+         * @param {string} query - 面板输入框内容
+         */
+        function renderPaletteList(query) {
+            const normalized = query.trim().toLowerCase();
+            const commands = buildPaletteCommands();
+            const matchedCommands = normalized
+                ? commands.filter(cmd => cmd.title.toLowerCase().includes(normalized))
+                : commands;
+
+            const items = matchedCommands.map(cmd => ({
+                kind: 'command',
+                title: cmd.title,
+                hint: cmd.hint,
+                action: cmd.action,
+            }));
+
+            let entrySection = '';
+            if (normalized) {
+                const matchedEntries = state.allEntries
+                    .filter(entry => {
+                        const haystack = [
+                            entry.full_name || '',
+                            entry.description || '',
+                            (entry.topics || []).join(' '),
+                        ].join(' ').toLowerCase();
+                        return haystack.includes(normalized);
+                    })
+                    .slice(0, PALETTE_RESULT_MAX);
+                matchedEntries.forEach(entry => {
+                    items.push({
+                        kind: 'entry',
+                        title: entry.full_name,
+                        hint: `star ${entry.stargazers_count || 0}`,
+                        url: entry.html_url,
+                    });
+                });
+            }
+
+            state.paletteItems = items;
+            state.paletteIndex = 0;
+
+            if (items.length === 0) {
+                dom.paletteList.innerHTML = '<div class="palette-empty">没有匹配的命令或项目</div>';
+                return;
+            }
+
+            const html = [];
+            let entryHeaderShown = false;
+            items.forEach((item, index) => {
+                if (item.kind === 'entry' && !entryHeaderShown && normalized) {
+                    html.push('<div class="palette-section">项目</div>');
+                    entryHeaderShown = true;
+                }
+                if (item.kind === 'command' && index === 0 && normalized && items.some(i => i.kind === 'entry')) {
+                    html.push('<div class="palette-section">命令</div>');
+                }
+                html.push(
+                    `<div class="palette-item${index === state.paletteIndex ? ' active' : ''}" data-index="${index}">` +
+                        `<span class="palette-item-title">${escapeHtml(item.title)}</span>` +
+                        (item.hint ? `<span class="palette-item-hint">${escapeHtml(item.hint)}</span>` : '') +
+                    `</div>`
+                );
+            });
+            dom.paletteList.innerHTML = html.join('');
+        }
+
+        /**
+         * 移动命令面板的选中项
+         * @param {number} delta - 移动方向（1 下 / -1 上），循环
+         */
+        function movePaletteSelection(delta) {
+            const count = state.paletteItems.length;
+            if (count === 0) return;
+            state.paletteIndex = (state.paletteIndex + delta + count) % count;
+            dom.paletteList.querySelectorAll('.palette-item').forEach(item => {
+                item.classList.toggle('active', Number(item.dataset.index) === state.paletteIndex);
+            });
+            const activeItem = dom.paletteList.querySelector('.palette-item.active');
+            if (activeItem) {
+                activeItem.scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        /**
+         * 执行命令面板当前选中项
+         */
+        function executePaletteSelection() {
+            const item = state.paletteItems[state.paletteIndex];
+            if (!item) return;
+            closePalette();
+            if (item.kind === 'entry') {
+                window.open(item.url, '_blank', 'noopener');
+            } else {
+                item.action();
+            }
+        }
+
+        // ========== 键盘导航 ==========
+
+        /**
+         * 移动表格选中行（j/k），同步真实焦点保证可预期
+         * @param {number} delta - 移动方向（1 下 / -1 上）
+         */
+        function moveRowSelection(delta) {
+            const rows = Array.from(dom.results.querySelectorAll('tr.data-row'));
+            if (rows.length === 0) return;
+
+            state.selectedIndex = Math.min(Math.max(state.selectedIndex + delta, 0), rows.length - 1);
+            rows.forEach((row, index) => {
+                row.classList.toggle('selected', index === state.selectedIndex);
+            });
+            const selectedRow = rows[state.selectedIndex];
+            selectedRow.focus({ preventScroll: true });
+            selectedRow.scrollIntoView({ block: 'nearest' });
+        }
+
+        /**
+         * 展开/收起当前选中行的详情
+         */
+        function toggleSelectedRow() {
+            const rows = dom.results.querySelectorAll('tr.data-row');
+            if (state.selectedIndex < 0 || state.selectedIndex >= rows.length) return;
+            toggleExpand(rows[state.selectedIndex].dataset.key);
+        }
+
+        // ========== 事件绑定 ==========
+
+        // 全局快捷键
+        document.addEventListener('keydown', (event) => {
+            // ⌘K / Ctrl+K：切换命令面板（任何状态下都可用）
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                togglePalette();
+                return;
+            }
+
+            // Esc 层级：命令面板 → 接入 Modal → 展开行 → 搜索框失焦
+            if (event.key === 'Escape') {
+                if (state.paletteOpen) {
+                    closePalette();
+                } else if (dom.accessModal.classList.contains('active')) {
+                    closeAccessModal();
+                } else if (state.expandedKey) {
+                    toggleExpand(state.expandedKey);
+                } else if (document.activeElement === dom.searchInput) {
+                    dom.searchInput.blur();
+                }
+                return;
+            }
+
+            // 命令面板打开时，其余全局快捷键让位给面板自身
+            if (state.paletteOpen) return;
+
+            // 输入控件聚焦时不拦截字符与导航键
+            const tag = document.activeElement ? document.activeElement.tagName : '';
+            if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+            if (event.key === '/') {
+                event.preventDefault();
+                dom.searchInput.focus();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                goToPage(state.currentPage - 1);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                goToPage(state.currentPage + 1);
+            } else if (event.key === 'j') {
+                event.preventDefault();
+                moveRowSelection(1);
+            } else if (event.key === 'k') {
+                event.preventDefault();
+                moveRowSelection(-1);
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                toggleSelectedRow();
+            }
+        });
+
+        // 命令面板输入与键盘
+        dom.paletteInput.addEventListener('input', () => {
+            renderPaletteList(dom.paletteInput.value);
+        });
+        dom.paletteInput.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                movePaletteSelection(1);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                movePaletteSelection(-1);
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                executePaletteSelection();
+            }
+        });
+        dom.paletteOverlay.addEventListener('click', (event) => {
+            if (event.target === dom.paletteOverlay) closePalette();
+        });
+        dom.paletteList.addEventListener('click', (event) => {
+            const item = event.target.closest('.palette-item');
+            if (!item) return;
+            state.paletteIndex = Number(item.dataset.index);
+            executePaletteSelection();
+        });
+
+        // 表头点击排序：同列切换方向，新列按内容类型给默认方向
+        dom.tableWrap.querySelectorAll('thead th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (state.sortField === field) {
+                    state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+                } else {
+                    state.sortField = field;
+                    state.sortOrder = field === 'full_name' ? 'asc' : 'desc';
+                }
+                applyFilters();
+            });
+        });
+
+        // 表格行交互：点击行展开（链接与按钮除外），行聚焦同步选中态
+        dom.results.addEventListener('click', (event) => {
+            if (event.target.closest('a')) return;
+            const row = event.target.closest('tr.data-row');
+            if (!row) return;
+            toggleExpand(row.dataset.key);
+        });
+        dom.results.addEventListener('focusin', (event) => {
+            const row = event.target.closest('tr.data-row');
+            if (!row) return;
+            const rows = Array.from(dom.results.querySelectorAll('tr.data-row'));
+            state.selectedIndex = rows.indexOf(row);
+            rows.forEach((item, index) => {
+                item.classList.toggle('selected', index === state.selectedIndex);
+            });
+        });
+        dom.results.addEventListener('keydown', (event) => {
+            const row = event.target.closest('tr.data-row');
+            if (!row) return;
+            if (event.key === 'Enter' && event.target === row) {
+                event.preventDefault();
+                toggleExpand(row.dataset.key);
+            }
+        });
+
+        // 分面导航：事件委托
+        dom.facetNav.addEventListener('click', (event) => {
+            const chip = event.target.closest('.facet-chip');
+            if (!chip) return;
+            state.activeTopic = chip.dataset.topic;
+            renderFacets();
             applyFilters();
         });
+
+        // 搜索与过滤
         dom.searchInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 applyFilters();
             }
         });
-        dom.languageFilter.addEventListener('change', applyFilters);
-        dom.sortBy.addEventListener('change', applyFilters);
-
-        // 防抖搜索
         let debounceTimer = null;
         dom.searchInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(applyFilters, 300);
+            debounceTimer = setTimeout(() => applyFilters(), 300);
+        });
+        dom.languageFilter.addEventListener('change', () => applyFilters());
+        dom.resetButton.addEventListener('click', resetAll);
+
+        // 接入说明 Modal 交互
+        dom.accessButton.addEventListener('click', () => openAccessModal());
+        dom.modalClose.addEventListener('click', () => closeAccessModal());
+        dom.accessModal.addEventListener('click', (event) => {
+            if (event.target === dom.accessModal) closeAccessModal();
+        });
+        document.querySelectorAll('.copy-button').forEach(btn => {
+            btn.addEventListener('click', () => copyCodeBlock(btn));
         });
 
         // 初始化
