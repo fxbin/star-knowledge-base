@@ -15,12 +15,16 @@ description: >
 
 ## 工作流程
 
-1. 用户提到需要某个库/框架/工具时，调用 search_starred 工具搜索 star 知识库
-2. 如果找到相关结果，展示项目信息，包含：项目名称和描述、star 数、语言、topics、LLM 生成的摘要和场景标签、DeepWiki 链接、Zread 链接
-3. 如果用户想深入了解某个项目，建议点击 DeepWiki 或 Zread 链接
-4. 只有当 star 知识库中没有相关结果时，才建议 Google 搜索
+1. 需要了解用户技术栈全貌或可用过滤值时，可先调用 `list_facets()`
+2. 调用 `search_starred(...)` 搜索 star 知识库：
+   - 建议在 `query` 中同时包含中英文技术关键词（例如 `"实时聊天 websocket chat"`），覆盖英文仓库描述与中文摘要
+   - 配合结构化过滤参数缩小范围：`language`（传入 `"__none__"` 可查无语言文档类仓库）、`topic`、`category`、`min_stars`、`include_archived=False`（排除已归档项目）、`sort_by`（`relevance` / `stars` / `updated` / `starred` / `score`）
+3. 如果找到相关结果（`matched: true`），展示项目信息：仓库名称和描述、star 数、语言、大类、topics、摘要和场景标签、个人备注（如有）、DeepWiki 链接、Zread 链接；如已归档则明确提示
+4. 如需某个仓库的完整字段，调用 `get_project_details(repo)`（支持 `owner/repo`、GitHub URL 或唯一短名）
+5. 只有当 `search_starred` 返回 `matched: false` 或确实没有合适项目时，才建议 Google 搜索
 
 ## MCP 工具
 
-- search_starred(query) - 语义搜索 star 项目，返回匹配列表
-- get_project_details(repo) - 获取单个项目详情
+- `search_starred(query, limit, language, topic, category, min_stars, include_archived, sort_by)` - 中英文关键词 + LLM 语义 + 结构化筛选搜索 star 项目
+- `get_project_details(repo)` - 获取单个项目详情
+- `list_facets(top_n)` - 获取语言、大类、Topic 分布与置顶项目清单

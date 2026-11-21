@@ -29,7 +29,7 @@
 | Groq | 免费速率限制 | 是 | 需代理 | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
 | DeepSeek | 付费 | 是 | 稳定 | `https://api.deepseek.com/v1` | `deepseek-chat` |
 | OpenAI 官方 | 付费 | - | 需代理 | 留空 | `gpt-4o-mini` |
-| Anthropic Claude | 付费 | - | 需代理 | 留空 | `claude-3-5-sonnet-20241022` |
+| Anthropic Claude | 付费 | - | 需代理 | 留空 | `claude-sonnet-4-20250514` |
 
 > 注：智谱 GLM-4.5-Flash 已于 2026-01-30 下线，当前免费模型为 GLM-4.7-Flash。
 
@@ -77,21 +77,24 @@ GitHub Actions（定时）→ 拉 star 数据 + LLM 生成元数据 → JSON
 star-knowledge-base/
 ├── .github/
 │   └── workflows/
-│       └── sync-stars.yml          # GitHub Actions: 定时拉取 star 数据
-├── docs/
-│   └── decisions/
-│       └── 圆桌讨论-GitHub-Pages-Star-Agent-可行性评估-v3.md   # 完整 6 轮讨论报告（含纠错）
+│       ├── deploy.yml               # GitHub Actions: 推送前端变更到 gh-pages（保留 data.json）
+│       ├── sync-stars.yml           # GitHub Actions: 定时拉取 star 数据并增量生成元数据
+│       └── test.yml                 # GitHub Actions: Python 与前端自动化单测
 ├── public/                          # GitHub Pages 静态文件
-│   ├── index.html                   # 搜索页（Vanilla JS）
+│   ├── index.html                   # 搜索页结构（零构建静态站）
+│   ├── styles.css                   # 样式系统（编辑级极简主义 + 高密度表格）
+│   ├── app.js                       # 前端交互逻辑（中英文检索、星图视图、URL 同步、本地备注）
 │   ├── data.json                    # star 数据（Actions 自动生成，gitignore）
-│   └── data.example.json            # 数据结构示例
+│   └── data.example.json            # 数据结构示例（schema v1.1）
 ├── skills/
 │   └── star-first-habit/
 │       └── SKILL.md                 # Agent Skill: 教 agent 优先查 star 知识库
 ├── src/
 │   ├── llm_client.py                # LLM 客户端抽象（OpenAI / Anthropic 可配置）
-│   ├── sync_stars.py                # Actions 脚本: 拉数据 + LLM 元数据推断
-│   └── mcp_server.py                # MCP server: 暴露 search_starred / get_project_details
+│   ├── sync_stars.py                # Actions 脚本: 拉数据 + 增量缓存/并发 LLM 元数据推断
+│   └── mcp_server.py                # MCP server: 暴露 search_starred / get_project_details / list_facets
+├── tests/                           # 后端与前端单元测试
+├── notes.json                       # 可选：仓库级个人置顶与备注（sync 时自动合并进 data.json）
 ├── .env.example                     # 环境变量模板
 ├── .gitignore
 ├── requirements.txt                 # Python 依赖
@@ -118,6 +121,15 @@ cd star-knowledge-base
 | `LLM_API_KEY` | 否 | LLM API 密钥，不配则启发式模式 | 智谱免费 key |
 | `LLM_BASE_URL` | 否 | LLM API 基础 URL（OpenAI 兼容接口用） | `https://open.bigmodel.cn/api/paas/v4` |
 | `LLM_MODEL` | 否 | 模型名称（不配用默认值） | `glm-4.7-flash` |
+| `LLM_CONCURRENCY` | 否 | LLM 并发线程数（默认 3，上限 8） | `3` |
+| `LLM_MAX_NEW_PER_RUN` | 否 | 单次最多用 LLM 处理的新仓库数（默认 0 不限） | `100` |
+
+> **增量同步说明**：`Sync Stars` 运行前会自动拉取 `gh-pages` 分支上期产出的 `data.json` 作为缓存种子，只对新增仓库或之前由 `heuristic` 降级生成的条目调用 LLM（配置了 `LLM_API_KEY` 后会自动分批或全量升级），不会重复消耗 token。
+
+### 3.5 个人置顶与备注（可选）
+
+- **浏览器内即用**：在网页展开任意项目即可点击「置顶」或填写「一句话备注」，默认保存在浏览器 `localStorage`；通过 `⌘K` 命令面板可随时导出或导入 `notes.json`。
+- **仓库级同步**：若将导出的 `notes.json` 放到仓库根目录（格式 `{"owner/repo": {"pinned": true, "note": "备注"}}`），`sync_stars.py` 会在同步时自动合并进 `data.json`，同时供网页与 MCP Agent 使用。
 
 **零门槛快速试用**：只配 `STAR_GITHUB_USERNAME` 就能跑，sync 会用启发式模式生成元数据。
 
@@ -201,13 +213,19 @@ npx skills add <your-username>/star-knowledge-base --skill star-first-habit
 
 Skill 跨平台支持 Claude Code / Cursor / Trae / Codex / OpenCode 等 40+ 工具。
 
+### MCP 工具列表
+
+- `search_starred(query, limit, language, topic, category, min_stars, include_archived, sort_by)`：支持中英文分词 + 可选 LLM 语义精排，并支持语言（传 `"__none__"` 查无语言文档项目）、Topic、大类、最小 Star、归档过滤与排序
+- `get_project_details(repo)`：大小写不敏感查找详情（支持 `owner/repo`、GitHub URL 或唯一短名）
+- `list_facets(top_n)`：查看语言、规范大类、高频 Topic 分布及置顶列表
+
 ### 7. 本地开发调试
 
 ```bash
 # 安装依赖
 pip install -r requirements.txt
 
-# 本地测试 sync_stars（需要 .env 或手动 export 环境变量）
+# 本地测试 sync_stars（会自动加载项目根目录 .env）
 cp .env.example .env  # 编辑后填入真实配置
 python src/sync_stars.py
 
@@ -218,6 +236,10 @@ python src/mcp_server.py
 # 本地预览 Pages
 cd public && python -m http.server 8000
 # 浏览器打开 http://localhost:8000
+
+# 运行单元测试
+python -m unittest discover -s tests -v
+node --check public/app.js && node tests/test_frontend.js
 ```
 
 ## 环境变量速查

@@ -23,7 +23,7 @@ permissions:
 
 # 同一时间只允许一个 sync 任务运行，避免并发冲突
 concurrency:
-  group: sync-stars
+  group: gh-pages-deploy
   cancel-in-progress: false
 
 jobs:
@@ -44,6 +44,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Fetch previous data.json from gh-pages as cache seed
+        continue-on-error: true
+        run: |
+          git fetch origin gh-pages --depth=1
+          mkdir -p .cache
+          git show origin/gh-pages:data.json > .cache/previous_data.json
+
       - name: Sync starred repos and generate metadata
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,6 +59,9 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_TIMEOUT: ${{ secrets.LLM_TIMEOUT }}
+          LLM_CONCURRENCY: ${{ secrets.LLM_CONCURRENCY }}
+          LLM_MAX_NEW_PER_RUN: ${{ secrets.LLM_MAX_NEW_PER_RUN }}
           FORCE_REFRESH: ${{ github.event.inputs.force_refresh || 'false' }}
         run: python src/sync_stars.py
 

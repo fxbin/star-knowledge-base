@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -42,7 +43,7 @@ PROVIDER_ANTHROPIC = "anthropic"
 
 DEFAULT_PROVIDER = PROVIDER_OPENAI
 DEFAULT_MODEL_OPENAI = "gpt-4o-mini"
-DEFAULT_MODEL_ANTHROPIC = "claude-3-5-sonnet-20241022"
+DEFAULT_MODEL_ANTHROPIC = "claude-sonnet-4-20250514"
 DEFAULT_TIMEOUT_SECONDS = 60
 DEFAULT_TEMPERATURE = 0.2
 DEFAULT_MAX_TOKENS = 1024
@@ -55,6 +56,24 @@ ENV_API_KEY = "LLM_API_KEY"
 ENV_BASE_URL = "LLM_BASE_URL"
 ENV_MODEL = "LLM_MODEL"
 ENV_TIMEOUT = "LLM_TIMEOUT"
+
+
+def _env_str(name: str, default: str) -> str:
+    """读取环境变量，缺失或为空白字符串时回退到默认值"""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    stripped = value.strip()
+    return stripped if stripped else default
+
+
+def _extract_json_text(raw: str) -> str:
+    """剥离 LLM 返回内容中的 Markdown 代码块围栏"""
+    text = raw.strip()
+    fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", text, flags=re.IGNORECASE)
+    if fence_match:
+        return fence_match.group(1).strip()
+    return text
 
 
 class LLMError(Exception):
@@ -78,20 +97,28 @@ class LLMConfig:
     def from_env(cls) -> "LLMConfig":
         """从环境变量加载配置
 
-        缺失必填项时抛出 LLMError，便于调用方快速定位配置问题。
+        缺失必填项或超时配置非法时抛出 LLMError，便于调用方快速定位配置问题。
         """
-        provider = os.getenv(ENV_PROVIDER, DEFAULT_PROVIDER).lower()
+        provider = _env_str(ENV_PROVIDER, DEFAULT_PROVIDER).lower()
         api_key = os.getenv(ENV_API_KEY, "").strip()
         if not api_key:
             raise LLMError(f"环境变量 {ENV_API_KEY} 未配置，无法初始化 LLM 客户端")
 
-        if provider == PROVIDER_ANTHROPIC:
-            model = os.getenv(ENV_MODEL, DEFAULT_MODEL_ANTHROPIC)
-        else:
-            model = os.getenv(ENV_MODEL, DEFAULT_MODEL_OPENAI)
+        default_model = (
+            DEFAULT_MODEL_ANTHROPIC
+            if provider == PROVIDER_ANTHROPIC
+            else DEFAULT_MODEL_OPENAI
+        )
+        model = _env_str(ENV_MODEL, default_model)
 
         base_url = os.getenv(ENV_BASE_URL, "").strip() or None
-        timeout_seconds = int(os.getenv(ENV_TIMEOUT, str(DEFAULT_TIMEOUT_SECONDS)))
+        timeout_raw = _env_str(ENV_TIMEOUT, str(DEFAULT_TIMEOUT_SECONDS))
+        try:
+            timeout_seconds = int(timeout_raw)
+        except ValueError as exc:
+            raise LLMError(f"环境变量 {ENV_TIMEOUT} 必须是正整数: {timeout_raw}") from exc
+        if timeout_seconds <= 0:
+            raise LLMError(f"环境变量 {ENV_TIMEOUT} 必须大于 0: {timeout_seconds}")
 
         return cls(
             provider=provider,
@@ -224,10 +251,19 @@ class LLMClient:
             max_tokens=max_tokens,
             response_format_json=True,
         )
+        cleaned = _extract_json_text(raw)
         try:
-            parsed = json.loads(raw)
+            parsed = json.loads(cleaned)
         except json.JSONDecodeError as exc:
-            raise LLMError(f"LLM 返回内容无法解析为 JSON: {raw[:200]}") from exc
+            start = cleaned.find("{")
+            end = cleaned.rfind("}")
+            if start != -1 and end > start:
+                try:
+                    parsed = json.loads(cleaned[start : end + 1])
+                except json.JSONDecodeError as inner_exc:
+                    raise LLMError(f"LLM 返回内容无法解析为 JSON: {raw[:200]}") from inner_exc
+            else:
+                raise LLMError(f"LLM 返回内容无法解析为 JSON: {raw[:200]}") from exc
 
         if not isinstance(parsed, dict):
             raise LLMError(f"LLM 返回 JSON 顶层不是对象: {type(parsed).__name__}")
