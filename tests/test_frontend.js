@@ -1,7 +1,11 @@
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const app = require('../public/app.js');
+
+const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 
 // 1. escapeHtml 转义 5 个关键字符
 {
@@ -36,7 +40,6 @@ const app = require('../public/app.js');
     assert.strictEqual(noDiff.newProjects.length, 0);
     assert.strictEqual(noDiff.starsGrew.length, 0);
 
-    // 模拟 1 个新增和 1 个涨星
     entries[600].stargazers_count += 25;
     entries.push({ full_name: 'owner/brand-new', stargazers_count: 42 });
 
@@ -125,7 +128,7 @@ const app = require('../public/app.js');
     assert.ok(highlighted.includes('<mark class="search-hl">mcp</mark>'));
 }
 
-// 7. URL 序列化与解析往返 + 本地备注合并
+// 7. URL 序列化与解析往返（含 cards 视图与 active90） + 本地备注合并
 {
     const stateObj = {
         q: 'agent mcp',
@@ -137,10 +140,26 @@ const app = require('../public/app.js');
         view: 'zoom',
         hideArchived: true,
         pinned: true,
+        active90: true,
     };
     const qs = app.serializeUrlParams(stateObj);
     const parsed = app.parseUrlParams(qs);
     assert.deepStrictEqual(parsed, stateObj);
+
+    const cardsParsed = app.parseUrlParams(app.serializeUrlParams({
+        q: '',
+        lang: '',
+        cat: '',
+        topic: '',
+        sort: 'starred_at',
+        order: 'desc',
+        view: 'cards',
+        hideArchived: false,
+        pinned: false,
+        active90: false,
+    }));
+    assert.strictEqual(cardsParsed.view, 'cards');
+    assert.strictEqual(cardsParsed.active90, false);
 
     const defaultQs = app.serializeUrlParams({
         q: '',
@@ -152,6 +171,7 @@ const app = require('../public/app.js');
         view: 'table',
         hideArchived: false,
         pinned: false,
+        active90: false,
     });
     assert.strictEqual(defaultQs, '');
 
@@ -163,4 +183,64 @@ const app = require('../public/app.js');
     assert.strictEqual(merged.note, '本地备注');
 }
 
-console.log('All frontend unit tests passed!');
+// 8. 新增格式化与辅助函数校验
+{
+    assert.strictEqual(app.formatStarCount(0), '0');
+    assert.strictEqual(app.formatStarCount(999), '999');
+    assert.strictEqual(app.formatStarCount(1300), '1.3k');
+    assert.strictEqual(app.formatStarCount(44672), '44.7k');
+    assert.strictEqual(app.formatStarCount(120000), '120k');
+    assert.strictEqual(app.formatStarCount(1500000), '1.5m');
+
+    const now = Date.UTC(2026, 10, 21, 12, 0, 0);
+    assert.strictEqual(app.formatRelativeTime('2026-11-21T08:00:00Z', now), '今天');
+    assert.strictEqual(app.formatRelativeTime('2026-11-20T08:00:00Z', now), '昨天');
+    assert.strictEqual(app.formatRelativeTime('2026-11-01T08:00:00Z', now), '20天前');
+    assert.strictEqual(app.formatRelativeTime('2026-07-01T08:00:00Z', now), '4个月前');
+    assert.strictEqual(app.formatRelativeTime('2024-01-01T08:00:00Z', now), '2年前');
+    assert.strictEqual(app.formatRelativeTime('', now), '未知');
+
+    assert.strictEqual(app.getFreshnessLevel('2026-10-01T00:00:00Z', now), 'fresh');
+    assert.strictEqual(app.getFreshnessLevel('2026-04-01T00:00:00Z', now), 'warm');
+    assert.strictEqual(app.getFreshnessLevel('2024-01-01T00:00:00Z', now), 'stale');
+    assert.strictEqual(app.getFreshnessLevel('', now), 'unknown');
+
+    assert.deepStrictEqual(app.splitRepoName('octocat/Hello-World'), { owner: 'octocat', repo: 'Hello-World' });
+    assert.deepStrictEqual(app.splitRepoName('solo'), { owner: '', repo: 'solo' });
+
+    assert.strictEqual(app.getRepoMonogram('fxbin/star-knowledge-base'), 'SK');
+    assert.strictEqual(app.getRepoMonogram('FastAPI/FastAPI'), 'FA');
+}
+
+// 9. HTML <-> JS DOM ID 契约测试与 CSS 括号平衡校验
+{
+    const html = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf8');
+    const js = fs.readFileSync(path.join(PUBLIC_DIR, 'app.js'), 'utf8');
+    const css = fs.readFileSync(path.join(PUBLIC_DIR, 'styles.css'), 'utf8');
+
+    const htmlIds = new Set();
+    let m;
+    const htmlIdRegex = /\bid=["']([^"']+)["']/g;
+    while ((m = htmlIdRegex.exec(html)) !== null) {
+        htmlIds.add(m[1]);
+    }
+
+    const jsIdRegex = /document\.getElementById\(\s*['"]([^'"]+)['"]\s*\)/g;
+    const missing = [];
+    while ((m = jsIdRegex.exec(js)) !== null) {
+        if (!htmlIds.has(m[1])) {
+            missing.push(m[1]);
+        }
+    }
+    assert.deepStrictEqual(missing, [], `HTML 缺失 DOM ID: ${missing.join(', ')}`);
+
+    let depth = 0;
+    for (let i = 0; i < css.length; i++) {
+        if (css[i] === '{') depth++;
+        else if (css[i] === '}') depth--;
+        assert.ok(depth >= 0, `styles.css 第 ${i} 字符处出现多余右花括号`);
+    }
+    assert.strictEqual(depth, 0, 'styles.css 花括号未闭合');
+}
+
+console.log('All frontend unit tests & DOM contract checks passed!');

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light" data-density="standard">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,47 +7,240 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Star Knowledge Base</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('skb_theme_v1');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : (prefersDark ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme;
+                var savedDensity = localStorage.getItem('skb_density_v1');
+                document.documentElement.dataset.density = savedDensity === 'compact' ? 'compact' : 'standard';
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <!-- 顶部导航 -->
-    <header class="header">
-        <div class="header-container">
-            <div class="header-brand">
-                <div class="header-logo" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2.5l2.7 7.7 8.1.1-6.5 4.8 2.4 7.7L12 18.3 5.3 22.8l2.4-7.7-6.5-4.8 8.1-.1z"/></svg>
+    <div class="app-shell">
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- 左侧目录侧边栏（DesignBookmark + Fabric 风格） -->
+        <aside class="sidebar" id="sidebar" aria-label="知识库导航">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="brand-logo" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.7 7.7 8.1.1-6.5 4.8 2.4 7.7L12 18.3 5.3 22.8l2.4-7.7-6.5-4.8 8.1-.1z"/></svg>
+                    </div>
+                    <div class="brand-text">
+                        <div class="brand-title">Star Base</div>
+                        <div class="brand-sub">个人 Star 知识库</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="header-title">Star Knowledge Base</div>
-                    <div class="header-subtitle">个人 GitHub Star 知识库，agent 可检索</div>
+                <span class="sidebar-total-pill" id="totalCount">-</span>
+            </div>
+
+            <div class="sidebar-scroll">
+                <section>
+                    <div class="sidebar-section-title">视图</div>
+                    <div class="sidebar-nav-list">
+                        <button type="button" class="sidebar-item active" id="navAllBtn">
+                            <span class="sidebar-item-left">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                <span class="sidebar-item-label">全部项目</span>
+                            </span>
+                            <span class="sidebar-item-count" id="navAllCount">0</span>
+                        </button>
+                        <button type="button" class="sidebar-item" id="navPinnedBtn">
+                            <span class="sidebar-item-left">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                <span class="sidebar-item-label">已置顶收藏</span>
+                            </span>
+                            <span class="sidebar-item-count" id="navPinnedCount">0</span>
+                        </button>
+                        <button type="button" class="sidebar-item" id="navRecentActiveBtn">
+                            <span class="sidebar-item-left">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                                <span class="sidebar-item-label">近期活跃 (90天)</span>
+                            </span>
+                            <span class="sidebar-item-count" id="navRecentCount">0</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section id="sidebarCategoriesSection" style="display:none;">
+                    <div class="sidebar-section-title">分类目录</div>
+                    <div class="sidebar-nav-list" id="sidebarCategoriesList"></div>
+                </section>
+
+                <section>
+                    <div class="sidebar-section-title">编程语言</div>
+                    <div class="sidebar-nav-list" id="sidebarLanguagesList"></div>
+                    <button type="button" class="sidebar-expand-btn" id="sidebarLangExpandBtn" style="display:none;"></button>
+                </section>
+            </div>
+
+            <div class="sidebar-footer">
+                <button type="button" class="sidebar-switch" id="hideArchivedBtn" style="display:none;" aria-pressed="false">
+                    <span>隐藏已归档仓库</span>
+                    <span class="switch-pill" aria-hidden="true"></span>
+                </button>
+                <div class="sidebar-links-row">
+                    <button type="button" class="sidebar-tool-btn" id="accessButton" title="查看 Agent / MCP 接入方式">
+                        Agent 接入
+                    </button>
+                    <button type="button" class="sidebar-tool-btn icon-square" id="shortcutsButton" title="快捷键速查 (?)" aria-label="快捷键速查">
+                        ?
+                    </button>
+                    <a class="sidebar-tool-btn icon-square" id="repoLink" href="https://github.com/fxbin/star-knowledge-base" target="_blank" rel="noopener" title="查看项目源码" aria-label="GitHub 仓库">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+                    </a>
                 </div>
             </div>
-            <div class="header-stats">
-                <div class="header-stat">
-                    <span>项目总数</span>
-                    <span class="header-stat-value" id="totalCount">-</span>
+        </aside>
+
+        <!-- 右侧主工作区 -->
+        <div class="workspace">
+            <!-- 粘性顶部命令栏 -->
+            <header class="topbar">
+                <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="打开导航菜单">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+
+                <div class="search-input-wrapper">
+                    <span class="search-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+                    </span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="搜索仓库、场景、技术栈或个人备注…"
+                        autocomplete="off"
+                    >
+                    <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="清除搜索">×</button>
+                    <button type="button" class="voice-btn" id="voiceBtn" title="语音搜索" aria-label="语音搜索" style="display:none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                    </button>
+                    <span class="search-kbd" aria-hidden="true">/</span>
                 </div>
-                <div class="header-stat">
-                    <span>语言</span>
-                    <span class="header-stat-value" id="langCount">-</span>
-                </div>
-                <div class="header-stat">
-                    <span>更新时间</span>
-                    <span class="header-stat-value" id="updateTime">-</span>
-                </div>
-                <div class="header-actions">
-                    <a class="access-button icon-only" id="repoLink" href="https://github.com/fxbin/star-knowledge-base" target="_blank" rel="noopener" title="查看本项目源码" aria-label="GitHub 仓库">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
-                    </a>
-                    <button class="access-button" id="accessButton" type="button" title="查看 agent 接入方式">
-                        接入说明
+
+                <div class="topbar-controls">
+                    <div class="view-toggle" role="group" aria-label="视图切换">
+                        <button type="button" class="view-toggle-btn active" id="viewTableBtn" title="高密度表格视图">表格</button>
+                        <button type="button" class="view-toggle-btn" id="viewCardsBtn" title="卡片画廊视图">卡片</button>
+                        <button type="button" class="view-toggle-btn" id="viewZoomBtn" title="语义星图视图">星图</button>
+                    </div>
+
+                    <select id="sortSelect" class="filter-select" aria-label="排序方式">
+                        <option value="starred_at:desc">最近 star</option>
+                        <option value="relevance:desc">匹配相关度</option>
+                        <option value="stargazers_count:desc">Star 数</option>
+                        <option value="pushed_at:desc">最近更新</option>
+                        <option value="quality_score:desc">质量评分</option>
+                        <option value="full_name:asc">名称 A-Z</option>
+                    </select>
+
+                    <button type="button" class="topbar-btn" id="densityToggleBtn" title="切换表格密度（标准 / 紧凑）">
+                        标准行高
+                    </button>
+
+                    <button type="button" class="topbar-btn icon-only" id="themeToggleBtn" title="切换深浅色主题" aria-label="切换主题">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+
+                    <button type="button" class="topbar-btn" id="paletteTriggerBtn" title="打开命令面板 (⌘K / Ctrl+K)">
+                        <span class="kbd-inline">⌘K</span>
                     </button>
                 </div>
-            </div>
-        </div>
-    </header>
+            </header>
 
-    <!-- 接入说明 Modal -->
+            <main class="main-stage">
+                <!-- 自上次访问以来的变化 -->
+                <div class="whats-new" id="whatsNew" style="display:none;">
+                    <svg class="whats-new-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    <div class="whats-new-body" id="whatsNewBody"></div>
+                    <button class="whats-new-dismiss" id="whatsNewDismiss" type="button" aria-label="关闭">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <!-- 已激活筛选条件条 -->
+                <div class="active-filters-bar" id="activeFiltersBar" aria-label="当前筛选条件"></div>
+
+                <!-- Topic 分面条 -->
+                <nav class="facet-nav" id="facetNav" aria-label="按 topic 筛选"></nav>
+
+                <!-- 统计元信息行 -->
+                <div class="stage-meta-bar">
+                    <div class="stage-meta-left">
+                        <span>显示 <span class="stats-count" id="statsCount">0</span> 个项目</span>
+                        <span id="pageInfo"></span>
+                    </div>
+                    <div class="stage-meta-right">
+                        <span><span id="langCount">-</span> 种语言</span>
+                        <span>同步于 <span id="updateTime">-</span></span>
+                    </div>
+                </div>
+
+                <!-- 视图 3：星图画布 -->
+                <div class="zoom-container" id="zoomContainer">
+                    <div class="zoom-toolbar">
+                        <div class="zoom-mode-switch" role="group" aria-label="聚类维度">
+                            <button type="button" class="zoom-mode-btn active" id="zoomModeCategoryBtn">按分类</button>
+                            <button type="button" class="zoom-mode-btn" id="zoomModeLangBtn">按语言</button>
+                        </div>
+                        <span class="zoom-badge" id="zoomStatsBadge">0 项目</span>
+                        <span class="zoom-badge" id="zoomScaleBadge">100%</span>
+                    </div>
+                    <canvas class="zoom-canvas" id="zoomCanvas"></canvas>
+                    <div class="zoom-empty" id="zoomEmpty">当前筛选条件下没有可展示的项目</div>
+                    <div class="zoom-tooltip" id="zoomTooltip"></div>
+                    <div class="zoom-controls">
+                        <button class="zoom-ctrl-btn" id="zoomInBtn" type="button" title="放大">+</button>
+                        <button class="zoom-ctrl-btn" id="zoomOutBtn" type="button" title="缩小">−</button>
+                        <button class="zoom-ctrl-btn" id="zoomResetBtn" type="button" title="重置" style="font-size:0.75rem;">↻</button>
+                    </div>
+                </div>
+
+                <!-- 视图 2：卡片画廊（DesignBookmark / Refero 风格） -->
+                <div class="cards-grid" id="cardsGrid"></div>
+
+                <!-- 视图 1：高密度工作台表格（Dub / Linear 风格） -->
+                <div class="table-wrap" id="tableWrap">
+                    <table class="repo-table">
+                        <thead>
+                            <tr>
+                                <th class="col-name sortable" data-sort="full_name">项目<span class="sort-slot"></span></th>
+                                <th class="col-lang">语言</th>
+                                <th class="col-stars sortable" data-sort="stargazers_count">Stars<span class="sort-slot"></span></th>
+                                <th class="col-updated sortable" data-sort="pushed_at">更新<span class="sort-slot"></span></th>
+                                <th class="col-score sortable" data-sort="quality_score">评分<span class="sort-slot"></span></th>
+                                <th class="col-topics">Topics</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results"></tbody>
+                    </table>
+                </div>
+
+                <div id="status" class="status"></div>
+                <div id="pagination" class="pagination" style="display: none;"></div>
+            </main>
+
+            <footer class="footer">
+                <p>由 <a id="footerAuthorLink" href="https://github.com/fxbin" target="_blank" rel="noopener">fxbin</a> 维护 · 数据每日由 GitHub Actions 自动同步</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 右侧滑出式项目检视抽屉（Fabric 风格） -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <aside class="detail-drawer" id="detailDrawer" role="complementary" aria-label="项目详情"></aside>
+
+    <!-- Agent 接入说明 Modal -->
     <div class="modal-overlay" id="accessModal">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="accessModalTitle">
             <div class="modal-header">
@@ -72,6 +265,30 @@
         </div>
     </div>
 
+    <!-- 快捷键速查 Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
+            <div class="modal-header">
+                <div class="modal-title" id="shortcutsModalTitle">键盘快捷键</div>
+                <button class="modal-close" id="shortcutsClose" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-row"><span class="shortcut-desc">聚焦搜索框</span><span class="shortcut-keys"><kbd class="keycap">/</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">命令面板</span><span class="shortcut-keys"><kbd class="keycap">⌘</kbd><kbd class="keycap">K</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">上 / 下选择项目</span><span class="shortcut-keys"><kbd class="keycap">k</kbd><kbd class="keycap">j</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">打开 / 关闭详情抽屉</span><span class="shortcut-keys"><kbd class="keycap">Enter</kbd><kbd class="keycap">Space</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">在 GitHub 打开选中项</span><span class="shortcut-keys"><kbd class="keycap">o</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">复制 git clone 命令</span><span class="shortcut-keys"><kbd class="keycap">c</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">置顶 / 取消置顶选中项</span><span class="shortcut-keys"><kbd class="keycap">p</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">上 / 下一页</span><span class="shortcut-keys"><kbd class="keycap">←</kbd><kbd class="keycap">→</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">逐级关闭浮层 / 抽屉</span><span class="shortcut-keys"><kbd class="keycap">Esc</kbd></span></div>
+                    <div class="shortcut-row"><span class="shortcut-desc">打开本速查表</span><span class="shortcut-keys"><kbd class="keycap">?</kbd></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 命令面板（⌘K / Ctrl+K） -->
     <div class="palette-overlay" id="paletteOverlay">
         <div class="palette" role="dialog" aria-modal="true" aria-label="命令面板">
@@ -87,128 +304,7 @@
     </div>
 
     <input type="file" id="notesImportInput" accept=".json,application/json" style="display:none;">
-
-    <!-- 主内容区 -->
-    <main class="main">
-        <!-- 上下文首屏：自上次访问以来的变化 -->
-        <div class="whats-new" id="whatsNew" style="display:none;">
-            <svg class="whats-new-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-            <div class="whats-new-body" id="whatsNewBody"></div>
-            <button class="whats-new-dismiss" id="whatsNewDismiss" type="button" aria-label="关闭">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
-            </button>
-        </div>
-
-        <!-- 搜索区 -->
-        <section class="search-section">
-            <div class="search-box">
-                <div class="search-input-wrapper">
-                    <span class="search-icon" aria-hidden="true">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
-                    </span>
-                    <input
-                        type="text"
-                        id="searchInput"
-                        class="search-input"
-                        placeholder="输入关键词、技术栈、场景或个人备注（例如：实时聊天、ORM、agent）"
-                        autocomplete="off"
-                    >
-                    <span class="search-kbd" aria-hidden="true">/</span>
-                    <button class="voice-btn" id="voiceBtn" type="button" title="语音搜索" aria-label="语音搜索" style="display:none;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
-                    </button>
-                </div>
-                <button id="resetButton" class="search-button" type="button">重置</button>
-            </div>
-
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label class="filter-label" for="languageFilter">语言</label>
-                    <select id="languageFilter" class="filter-select">
-                        <option value="">全部</option>
-                    </select>
-                </div>
-
-                <div class="filter-group" id="categoryFilterGroup" style="display:none;">
-                    <label class="filter-label" for="categoryFilter">分类</label>
-                    <select id="categoryFilter" class="filter-select">
-                        <option value="">全部</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label" for="sortSelect">排序</label>
-                    <select id="sortSelect" class="filter-select">
-                        <option value="starred_at:desc">最近 star</option>
-                        <option value="relevance:desc">匹配相关度</option>
-                        <option value="stargazers_count:desc">Star 数</option>
-                        <option value="pushed_at:desc">最近更新</option>
-                        <option value="quality_score:desc">质量评分</option>
-                        <option value="full_name:asc">名称 A-Z</option>
-                    </select>
-                </div>
-
-                <button class="filter-toggle" id="hideArchivedBtn" type="button" style="display:none;" aria-pressed="false">隐藏已归档</button>
-                <button class="filter-toggle" id="pinnedOnlyBtn" type="button" style="display:none;" aria-pressed="false">仅看置顶</button>
-
-                <span class="banner-filter-pill" id="bannerFilterPill" style="display:none;">
-                    <span id="bannerFilterText"></span>
-                    <button class="banner-filter-clear" id="bannerFilterClear" type="button" aria-label="清除变化筛选">×</button>
-                </span>
-
-                <div class="stats">
-                    <span>筛选 <span class="stats-count" id="statsCount">0</span> 个</span>
-                    <span id="pageInfo"></span>
-                </div>
-                <div class="view-toggle" role="group" aria-label="视图切换">
-                    <button class="view-toggle-btn active" id="viewTableBtn" type="button" title="表格视图">表格</button>
-                    <button class="view-toggle-btn" id="viewZoomBtn" type="button" title="语义缩放视图">星图</button>
-                </div>
-            </div>
-            <div class="filter-hint">
-                快捷键：/ 聚焦搜索，←/→ 翻页，j/k 选择行，Enter 展开详情，⌘K 命令面板（含导出/导入备注），点击标签可直接筛选，筛选状态自动同步 URL 便于书签收藏
-            </div>
-        </section>
-
-        <!-- Topic 分面导航 -->
-        <nav class="facet-nav" id="facetNav" aria-label="按 topic 筛选"></nav>
-
-        <!-- 语义缩放画布（星图视图） -->
-        <div class="zoom-container" id="zoomContainer">
-            <canvas class="zoom-canvas" id="zoomCanvas"></canvas>
-            <div class="zoom-empty" id="zoomEmpty">当前筛选条件下没有可展示的项目</div>
-            <div class="zoom-tooltip" id="zoomTooltip"></div>
-            <div class="zoom-controls">
-                <button class="zoom-ctrl-btn" id="zoomInBtn" type="button" title="放大">+</button>
-                <button class="zoom-ctrl-btn" id="zoomOutBtn" type="button" title="缩小">−</button>
-                <button class="zoom-ctrl-btn" id="zoomResetBtn" type="button" title="重置" style="font-size:0.75rem;">↻</button>
-            </div>
-        </div>
-
-        <!-- 高密度表格视图 -->
-        <div class="table-wrap" id="tableWrap">
-            <table class="repo-table">
-                <thead>
-                    <tr>
-                        <th class="col-name sortable" data-sort="full_name">名称<span class="sort-slot"></span></th>
-                        <th class="col-lang">语言</th>
-                        <th class="col-stars sortable" data-sort="stargazers_count">Stars<span class="sort-slot"></span></th>
-                        <th class="col-score sortable" data-sort="quality_score">评分<span class="sort-slot"></span></th>
-                        <th class="col-topics">Topics</th>
-                        <th class="col-chevron"></th>
-                    </tr>
-                </thead>
-                <tbody id="results"></tbody>
-            </table>
-        </div>
-        <div id="status" class="status"></div>
-        <div id="pagination" class="pagination" style="display: none;"></div>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="footer">
-        <p>由 <a id="footerAuthorLink" href="https://github.com/fxbin" target="_blank" rel="noopener">fxbin</a> 维护，数据每日由 GitHub Actions 自动同步</p>
-    </footer>
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
     <script src="./app.js" defer></script>
 </body>
