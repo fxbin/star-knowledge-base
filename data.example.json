@@ -1,6 +1,7 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "generated_at": "2026-07-17T02:00:00.000000+00:00",
+  "username": "octocat",
   "total": 2,
   "entries": [
     {
@@ -16,11 +17,17 @@
       "open_issues_count": 12,
       "pushed_at": "2026-06-15T10:30:00Z",
       "starred_at": "2026-07-10T03:00:00Z",
+      "archived": false,
+      "homepage": "",
+      "license": "MIT",
+      "category": "学习/资源",
       "summary": "GitHub 官方的示例仓库，演示基础 Git 工作流和仓库管理功能。",
       "use_cases": ["Git 入门", "GitHub 演示", "教学示例"],
       "quality_score": 3,
       "deepwiki_url": "https://deepwiki.com/octocat/Hello-World",
       "zread_url": "https://zread.ai/octocat/Hello-World",
+      "pinned": false,
+      "note": "",
       "metadata_generated_at": "2026-07-17T02:00:05.123456+00:00",
       "metadata_generator_model": "gpt-4o-mini"
     },
@@ -37,11 +44,17 @@
       "open_issues_count": 35,
       "pushed_at": "2026-07-14T08:00:00Z",
       "starred_at": "2026-06-20T12:00:00Z",
+      "archived": false,
+      "homepage": "https://modelcontextprotocol.io",
+      "license": "MIT",
+      "category": "AI/Agent",
       "summary": "MCP 官方 Python SDK，用于构建 MCP server 和 client，让 agent 接入外部数据源和工具。",
       "use_cases": ["构建 MCP server", "Agent 工具集成", "LLM 数据访问"],
       "quality_score": 5,
       "deepwiki_url": "https://deepwiki.com/modelcontextprotocol/python-sdk",
       "zread_url": "https://zread.ai/modelcontextprotocol/python-sdk",
+      "pinned": true,
+      "note": "MCP 服务端开发标准库",
       "metadata_generated_at": "2026-07-17T02:00:08.654321+00:00",
       "metadata_generator_model": "gpt-4o-mini"
     }
